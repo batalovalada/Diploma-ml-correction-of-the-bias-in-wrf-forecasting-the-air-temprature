@@ -1,3 +1,11 @@
+# config with paths (local settings)
+scripts/config.sh
+
+# too large data wrf out
+data/WRF_output/wrfout_d01_*
+data/lstm/raw/df_raw.parquet
+data/lstm/raw/ds_raw.nc
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

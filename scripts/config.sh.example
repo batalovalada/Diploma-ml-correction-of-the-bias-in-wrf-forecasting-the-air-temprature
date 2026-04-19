@@ -1,0 +1,4 @@
+export WRF_DIR=/path/to/WRF
+export WPS_DIR=/path/to/WPS
+export ERA5_DIR=/path/to/ERA5
+export NP=4

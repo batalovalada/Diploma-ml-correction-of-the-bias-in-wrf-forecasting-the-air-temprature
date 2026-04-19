@@ -1,0 +1,142 @@
+Список всех признаков:
+Times, LU_INDEX, ZNU, ZNW, ZS, DZS, VAR_SSO, BATHYMETRY_FLAG, U, V, W, PH, PHB, T, THM, HFX_FORCE, LH_FORCE, TSK_FORCE, HFX_FORCE_TEND, LH_FORCE_TEND, TSK_FORCE_TEND, MU, MUB, NEST_POS, P, PB, FNM, FNP, RDNW, RDN, DNW, DN, CFN, CFN1, THIS_IS_AN_IDEAL_RUN, P_HYD, Q2, T2, TH2, PSFC, U10, V10, RDX, RDY, AREA2D, DX2D, RESM, ZETATOP, CF1, CF2, CF3, ITIMESTEP, QVAPOR, QCLOUD, QRAIN, QICE, QSNOW, QGRAUP, SHDMAX, SHDMIN, SHDAVG, SNOALB, TSLB, SMOIS, SH2O, SMCREL, SEAICE, XICEM, SFROFF, UDROFF, IVGTYP, ISLTYP, VEGFRA, GRDFLX, ACGRDFLX, ACSNOM, SNOW, SNOWH, CANWAT, SSTSK, WATER_DEPTH, COSZEN, LAI, DTAUX3D, DTAUY3D, DUSFCG, DVSFCG, VAR, CON, OA1, OA2, OA3, OA4, OL1, OL2, OL3, OL4, O3_GFS_DU, MAPFAC_M, MAPFAC_U, MAPFAC_V, MAPFAC_MX, MAPFAC_MY, MAPFAC_UX, MAPFAC_UY, MAPFAC_VX, MF_VX_INV, MAPFAC_VY, F, E, SINALPHA, COSALPHA, HGT, TSK, P_TOP, GOT_VAR_SSO, T00, P00, TLP, TISO, TLP_STRAT, P_STRAT, MAX_MSFTX, MAX_MSFTY, RAINC, RAINSH, RAINNC, SNOWNC, GRAUPELNC, HAILNC, CLDFRA, SWDOWN, GLW, SWNORM, ACSWUPT, ACSWUPTC, ACSWDNT, ACSWDNTC, ACSWUPB, ACSWUPBC, ACSWDNB, ACSWDNBC, ACLWUPT, ACLWUPTC, ACLWDNT, ACLWDNTC, ACLWUPB, ACLWUPBC, ACLWDNB, ACLWDNBC, SWUPT, SWUPTC, SWDNT, SWDNTC, SWUPB, SWUPBC, SWDNB, SWDNBC, LWUPT, LWUPTC, LWDNT, LWDNTC, LWUPB, LWUPBC, LWDNB, LWDNBC, OLR, ALBEDO, CLAT, ALBBCK, EMISS, NOAHRES, TMN, XLAND, UST, PBLH, HFX, QFX, LH, ACHFX, ACLHF, SNOWC, SR, SAVE_TOPO_FROM_REAL, ISEEDARR_SPPT, ISEEDARR_SKEBS, ISEEDARR_RAND_PERTURB, ISEEDARRAY_SPP_CONV, ISEEDARRAY_SPP_PBL, ISEEDARRAY_SPP_LSM, C1H, C2H, C1F, C2F, C3H, C4H, C3F, C4F, PCB, PC, LANDMASK, LAKEMASK, SST, SST_INPUT
+
+Список выбранных признаков: T2, PSFC, U10, V10, Q2, SWDOWN, GLW, LH, HFX, PBLH, UST
+
+Вид индексов: MultiIndex([('2020-01-01 00:00:00',  0,  0),
+            ('2020-01-01 00:00:00',  0,  1),
+            ('2020-01-01 00:00:00',  0,  2),
+            ('2020-01-01 00:00:00',  0,  3),
+            ('2020-01-01 00:00:00',  0,  4),
+            ('2020-01-01 00:00:00',  0,  5),
+            ('2020-01-01 00:00:00',  0,  6),
+            ('2020-01-01 00:00:00',  0,  7),
+            ('2020-01-01 00:00:00',  0,  8),
+            ('2020-01-01 00:00:00',  0,  9),
+            ...
+            ('2020-01-31 18:00:00', 58, 37),
+            ('2020-01-31 18:00:00', 58, 38),
+            ('2020-01-31 18:00:00', 58, 39),
+            ('2020-01-31 18:00:00', 58, 40),
+            ('2020-01-31 18:00:00', 58, 41),
+            ('2020-01-31 18:00:00', 58, 42),
+            ('2020-01-31 18:00:00', 58, 43),
+            ('2020-01-31 18:00:00', 58, 44),
+            ('2020-01-31 18:00:00', 58, 45),
+            ('2020-01-31 18:00:00', 58, 46)],
+           names=['time', 'south_north', 'west_east'], length=2049247)
+
+Общее количество точек сетки: 58 x 46 (south_north x west_east)
+
+Размерность датасета: (2049247, 13)
+
+Количество взятых узлов: 25
+
+Размерность после отбора узлов: (18475, 17)
+
+Типы данных:
+time           datetime64[ns]
+south_north             int64
+west_east               int64
+T2                    float32
+PSFC                  float32
+U10                   float32
+V10                   float32
+Q2                    float32
+SWDOWN                float32
+GLW                   float32
+LH                    float32
+HFX                   float32
+PBLH                  float32
+UST                   float32
+XLAT                  float32
+XLONG                 float32
+node_id                   str
+dtype: object
+
+
+Обзор train:
+
+<class 'pandas.DataFrame'>
+RangeIndex: 11425 entries, 0 to 11424
+Data columns (total 17 columns):
+ #   Column       Non-Null Count  Dtype         
+---  ------       --------------  -----         
+ 0   time         11425 non-null  datetime64[ns]
+ 1   south_north  11425 non-null  int64         
+ 2   west_east    11425 non-null  int64         
+ 3   T2           11425 non-null  float32       
+ 4   PSFC         11425 non-null  float32       
+ 5   U10          11425 non-null  float32       
+ 6   V10          11425 non-null  float32       
+ 7   Q2           11425 non-null  float32       
+ 8   SWDOWN       11425 non-null  float32       
+ 9   GLW          11425 non-null  float32       
+ 10  LH           11425 non-null  float32       
+ 11  HFX          11425 non-null  float32       
+ 12  PBLH         11425 non-null  float32       
+ 13  UST          11425 non-null  float32       
+ 14  XLAT         11425 non-null  float32       
+ 15  XLONG        11425 non-null  float32       
+ 16  node_id      11425 non-null  str           
+dtypes: datetime64[ns](1), float32(13), int64(2), str(1)
+memory usage: 972.2 KB
+
+
+        time  south_north  west_east          T2           PSFC       U10       V10        Q2  SWDOWN  GLW   LH  HFX  PBLH     UST       XLAT      XLONG node_id
+0 2020-01-01            0          0  271.134644   99411.859375  3.131680 -4.358888  0.000001     0.0  0.0  0.0  0.0   0.0  0.0001  57.601887  27.523163     0-0
+1 2020-01-01            0          1  271.752625  100005.023438  2.398396 -5.160053  0.000001     0.0  0.0  0.0  0.0   0.0  0.0001  57.639633  29.335999     0-1
+2 2020-01-01            0          2  272.285767   99828.171875  2.489067 -5.635113  0.000001     0.0  0.0  0.0  0.0   0.0  0.0001  57.650845  31.000000     0-2
+3 2020-01-01            0          3  271.565430   97995.585938  2.473360 -5.735541  0.000001     0.0  0.0  0.0  0.0   0.0  0.0001  57.637508  32.815216     0-3
+4 2020-01-01            0          4  272.672760   98157.210938  1.830791 -6.182380  0.000001     0.0  0.0  0.0  0.0   0.0  0.0001  57.601887  34.476837     0-4
+
+Сводная статистика train:
+                                time   south_north     west_east            T2           PSFC           U10           V10            Q2        SWDOWN           GLW            LH           HFX          PBLH           UST          XLAT         XLONG
+count                          11425  11425.000000  11425.000000  11425.000000   11425.000000  11425.000000  11425.000000  11425.000000  11425.000000  11425.000000  11425.000000  11425.000000  11425.000000  11425.000000  11425.000000  11425.000000
+mean   2020-01-10 12:00:17.960152576      2.000000      2.000000    264.021667   99630.789062      3.481792      2.180853     -0.000532     23.431171    115.958412     10.536988    -37.485256    372.587921      0.213990     60.006084     31.032499
+min              2020-01-01 00:00:00      0.000000      0.000000    247.012192   96149.867188     -2.473878    -11.565162     -0.003928      0.000000      0.000000    -42.749058   -184.350876      0.000000      0.000100     57.601887     26.992462
+25%              2020-01-05 18:00:00      1.000000      1.000000    259.996643   98845.218750      2.389879      0.834761     -0.001855      0.000000    102.143799    -13.926802    -55.410854    160.770142      0.081124     58.814957     29.145111
+50%              2020-01-10 12:00:00      2.000000      2.000000    263.011749   99717.851562      3.330975      2.332681     -0.000158      0.000000    106.058228     -3.415524    -34.913296    286.445190      0.136444     59.985710     31.000000
+75%              2020-01-15 06:00:00      3.000000      3.000000    267.109131  100507.171875      4.140501      3.564671      0.000602      0.889326    126.443115      8.675445    -20.544891    597.887329      0.311104     61.283867     33.023407
+max              2020-01-20 00:00:00      4.000000      4.000000    279.212402  102459.937500     13.103219     14.112082      0.002539    231.393311    183.581787    249.256821    120.512474   1462.774170      1.117377     62.349197     35.007538
+std                              NaN      1.414275      1.414275      5.890964    1172.315796      2.068928      2.324914      0.001469     49.051247     22.445921     47.632359     36.387157    257.834503      0.180415      1.672161      2.646384
+
+Пропущенные значения в train:
+time           0
+south_north    0
+west_east      0
+T2             0
+PSFC           0
+U10            0
+V10            0
+Q2             0
+SWDOWN         0
+GLW            0
+LH             0
+HFX            0
+PBLH           0
+UST            0
+XLAT           0
+XLONG          0
+node_id        0
+dtype: int64
+
+Корреляции целевой переменной T2:
+T2        1.000000
+PBLH      0.705290
+U10       0.681330
+LH        0.588022
+GLW       0.544515
+UST       0.534459
+Q2        0.361013
+SWDOWN    0.356924
+V10       0.050332
+HFX      -0.410419
+PSFC     -0.576580
+Name: T2, dtype: float64
+
+Автокорреляция
+при lag = 4 : 0.74502242586415
+при lag = 8 : 0.5346620498354224
+при lag = 12 : 0.4277836612288458
+при lag = 24 : 0.4959661108562853
