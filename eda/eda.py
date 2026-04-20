@@ -4,11 +4,11 @@ import xarray as xr
 import pandas as pd
 
 # ========= paths =======================
-wrf_path = '../../data/WRF_output/wrfout_d01_2020-01-01_00:00:00'
-reports_path = '../../reports/eda/'
+wrf_path = '../data/WRF_output/wrfout_d01_2020-01-01_00:00:00'
+reports_path = '../reports/eda/'
 eda_report = 'data_info.txt'
-wrf_raw_path = '../../data/lstm/raw/df_raw.parquet'
-wrf_nodes_path = '../../data/lstm/raw/df_nodes.parquet'
+wrf_raw_path = '../data/base_processed/full/df_full_wrf.parquet'
+wrf_nodes_path = '../data/base_processed/selected/df_selected_wrf.parquet'
 
 # =========== parameters =================
 features = ['T2', 'PSFC', 'U10', 'V10', 'Q2', 'SWDOWN', 'GLW', 'LH', 'HFX', 'PBLH', 'UST']

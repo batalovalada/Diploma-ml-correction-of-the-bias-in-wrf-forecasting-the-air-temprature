@@ -6,9 +6,9 @@ from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
 
 #================== paths ===============================
-path_processed = '../../data/lstm/processed/'
-path_norm = '../../data/lstm/norm_params/'
-path_results = './results/'
+path_processed = '../../data/ConvLSTM/processed/'
+path_norm = '../../data/ConvLSTM/norm_params/'
+path_results = '../../reports/results/ConvLSTM/'
 
 # ============= parameters =============================
 BATCH_SIZE = 8
@@ -241,7 +241,7 @@ print(f"MAE:  {mae}")
 print(f"Bias: {bias}")
 print(f"Corr: {corr}")
 
-# rmse metric to compare WRF and ConvLSTM results
+# rmse metric to compare WRF and ConvLSTM ConvLSTM
 rmse_wrf = masked_rmse(T2_wrf, T2_era5, y_mask)
 rmse_corr = masked_rmse(T2_corrected, T2_era5, y_mask)
 
@@ -290,7 +290,7 @@ plt.title("RMSE map")
 plt.savefig(path_results+"rmse_map.png")
 plt.close()
 
-# results visualization ----------------------
+# ConvLSTM visualization ----------------------
 time_i = 0
 vmin = min(T2_wrf.min(), T2_corrected.min(), T2_era5.min())
 vmax = max(T2_wrf.max(), T2_corrected.max(), T2_era5.max())
@@ -318,8 +318,8 @@ plt.tight_layout()
 plt.savefig(path_results+"results_map.png")
 plt.close()
 
-# save results =======================================
-np.savez(path_results+"results.npz",
+# save ConvLSTM =======================================
+np.savez(path_results+"ConvLSTM.npz",
          y_pred=y_pred,
          y_true=y_true,
          mask=y_mask)

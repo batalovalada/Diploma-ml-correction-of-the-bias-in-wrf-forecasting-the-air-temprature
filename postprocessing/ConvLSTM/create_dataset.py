@@ -1,25 +1,18 @@
-import glob
 import xarray as xr
 import numpy as np
 
 # ========================================= paths ========================
-paths_surface = sorted(glob.glob('../../../data/ERA5/surface/ERA5_surface_*.grib'))
-path_nodes = '../../../data/lstm/raw/ds_nodes.nc'
-path_norm = '../../../data/lstm/norm_params/'
-path_processed = '../../../data/lstm/processed/'
+path_selected = '../../data/base_processed/selected/'
+path_norm = '../../data/ConvLSTM/norm_params/'
+path_processed = '../../data/ConvLSTM/processed/'
 
-# ======= values ================================================
+# ======= parameters ================================================
 train_start, train_end = '2020-01-01', '2020-01-20'
 val_start, val_end = '2020-01-21', '2020-01-25'
 test_start, test_end = '2020-01-26', '2020-01-31'
 
 lookback = 4
 horizon = 1
-
-# create dataset from .grib files function
-def create_dataset_era5(paths, filter_arg):
-    ds = xr.concat([xr.open_mfdataset(path, engine="cfgrib", backend_kwargs=filter_arg) for path in paths], dim='time')
-    return ds
 
 # split data to train, test, val function
 def split_data(X_ds, y_ds, y_mask_ds, start, end):
@@ -54,30 +47,13 @@ def create_sequences(X, y, mask, lookback, horizon):
         np.array(mask_seq, dtype=np.float32)
     )
 
-
 # =============================== download data ============================
-ds_era5 = create_dataset_era5(paths_surface, {"filter_by_keys": {"typeOfLevel": "surface"}})
-ds_wrf = xr.open_dataset(path_nodes)
-
-# time intersect wrf (era5 has 6h step, wrf output has ~1h step )=============
-ds_wrf['time'] = ds_wrf.indexes['time'].floor('h') # wrf and era5 has ms difference
-ds_era5['time'] = ds_era5.indexes['time'].floor('h')
-
-common_time = np.intersect1d(ds_wrf.time, ds_era5.time)
-ds_wrf = ds_wrf.sel(time=common_time)
-ds_era5 = ds_era5.sel(time=common_time)
-
-# selected nodes era5 interpolation =====================================
-# get nodes coordinates (XLAT, XLONG)
-lats = ds_wrf.XLAT.isel(time=0).reset_coords(drop=True)
-lons = ds_wrf.XLONG.isel(time=0).reset_coords(drop=True)
-
-ds_wrf = ds_wrf.drop_vars(['XLAT', 'XLONG'])
-ds_era5_interp = ds_era5.sel(time=common_time).interp(latitude=lats, longitude=lons)
+ds_wrf = xr.open_dataset(path_selected+'ds_selected_wrf.nc')
+ds_era5 = xr.open_dataset(path_selected+'ds_selected_era5.nc')
 
 # creating X, y with train, val, test ======================================
 X_ds = ds_wrf
-y_ds = ds_era5_interp['t2m'] - ds_wrf['T2']
+y_ds = ds_era5['t2m'] - ds_wrf['T2']
 
 y_mask = (~np.isnan(y_ds)).astype(np.uint8) # -> loss
 y_ds = y_ds.fillna(0) # y_ds has nan
@@ -87,7 +63,7 @@ X_val, y_val, y_mask_val = split_data(X_ds, y_ds, y_mask, val_start, val_end)
 X_test, y_test, y_mask_test = split_data(X_ds, y_ds, y_mask, test_start, test_end)
 # save X_test[T2] (WRF test data), ERA5[t2m] -> model.py
 X_test['T2'].to_netcdf(path_processed+ "t2_wrf_test.nc")
-ds_era5_interp['t2m'].sel(time=slice(test_start, test_end)).to_netcdf(path_processed+ "t2_era5_test.nc")
+ds_era5['t2m'].sel(time=slice(test_start, test_end)).to_netcdf(path_processed+ "t2_era5_test.nc")
 
 # ========================== normalize =======================================
 X_train = X_train.to_array().transpose("time","variable","south_north","west_east")

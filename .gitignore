@@ -3,8 +3,8 @@ scripts/config.sh
 
 # too large data wrf out
 data/WRF_output/wrfout_d01_*
-data/lstm/raw/df_raw.parquet
-data/lstm/raw/ds_raw.nc
+data/base_processed/full/df_full_wrf.parquet
+data/base_processed/full/ds_full_wrf.nc
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
