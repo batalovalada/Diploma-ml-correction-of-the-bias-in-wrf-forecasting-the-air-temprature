@@ -2,9 +2,13 @@ import xarray as xr
 import numpy as np
 import glob
 
+from config.data.features_config import features
+from config.data.split_config import *
+
 # ========= paths =======================
 path_full = '../data/base_processed/full/'
 path_selected = '../data/base_processed/selected/'
+path_t2m = '../data/base_processed/t2m/'
 path_wrf = '../data/WRF_output/wrfout_d01_*'
 paths_surface = sorted(glob.glob('../data/ERA5/surface/ERA5_surface_*.grib'))
 
@@ -15,12 +19,10 @@ def create_dataset_era5(paths, filter_arg):
 
 
 # =========== parameters =================
-features = ['T2', 'PSFC', 'U10', 'V10', 'Q2', 'SWDOWN', 'GLW', 'LH', 'HFX', 'PBLH', 'UST']
-
 sn = [0, 15, 29, 45, 58]  #25 nodes
 we = [0, 12, 23, 35, 46]
 
-# =========== download wrf output and era5 data ==============
+# =========== load wrf output and era5 data ==============
 ds_wrf = xr.open_mfdataset(
     path_wrf,
     combine='by_coords',
@@ -58,17 +60,27 @@ ds_era5 = ds_era5.sel(time=common_time)
 lats = ds_wrf.XLAT.isel(time=0).reset_coords(drop=True)
 lons = ds_wrf.XLONG.isel(time=0).reset_coords(drop=True)
 
-ds_wrf = ds_wrf.drop_vars(['XLAT', 'XLONG'])
 ds_era5 = ds_era5.sel(time=common_time).interp(latitude=lats, longitude=lons)
 
 # to save selected data in DataFrame
 df_wrf = ds_wrf.to_dataframe().reset_index()
 df_era5 = ds_era5.to_dataframe().reset_index()
-# south_north, west_east -> node_id (using indexes from sn, we lists: sni-wei)
-df_wrf['node_id'] = df_wrf['south_north'].astype(str) + '-' + df_wrf['west_east'].astype(str)
+
+# south_north, west_east -> node_id (using indexes from sn, we lists: sni-wei) for eda
+df_eda = df_wrf.copy()
+df_eda['node_id'] = df_eda['south_north'].astype(str) + '-' + df_eda['west_east'].astype(str)
+
+# select data to check metrics (test, val) =================================================================
+t2_era5_test = ds_era5['t2m'].sel(time=slice(test_start, test_end))
+t2_wrf_test = ds_wrf['T2'].sel(time=slice(test_start, test_end))
 
 # save clean df, ds in selected nodes and intersected time -------------------------------------
-df_wrf.to_parquet(path_selected + 'df_selected_wrf.parquet', index=False) # -> eda.py
+df_eda.to_parquet(path_selected + 'df_selected_eda.parquet', index=False) # -> eda.py
+df_wrf.to_parquet(path_selected + 'df_selected_wrf.parquet', index=False) # -> model preprocess
 ds_wrf.to_netcdf(path_selected + "ds_selected_wrf.nc") # -> model preprocess
 df_era5.to_parquet(path_selected + 'df_selected_era5.parquet', index=False) # -> model preprocess
 ds_era5.to_netcdf(path_selected + 'ds_selected_era5.nc') # -> model preprocess
+
+# save t2 era5 and t2 wrf ----------------------------------------------------------------------
+t2_era5_test.to_netcdf(path_t2m + "t2_era5_test.nc") # -> model preprocess
+t2_wrf_test.to_netcdf(path_t2m + "t2_wrf_test.nc") # -> model preprocess

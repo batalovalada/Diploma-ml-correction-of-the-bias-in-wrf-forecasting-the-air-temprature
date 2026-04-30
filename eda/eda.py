@@ -2,23 +2,20 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import xarray as xr
 import pandas as pd
+from config.data.split_config import train_start, train_end
+from config.data.features_config import features
 
 # ========= paths =======================
 wrf_path = '../data/WRF_output/wrfout_d01_2020-01-01_00:00:00'
 reports_path = '../reports/eda/'
 eda_report = 'data_info.txt'
 wrf_raw_path = '../data/base_processed/full/df_full_wrf.parquet'
-wrf_nodes_path = '../data/base_processed/selected/df_selected_wrf.parquet'
+wrf_nodes_path = '../data/base_processed/selected/df_selected_eda.parquet'
 
 # =========== parameters =================
-features = ['T2', 'PSFC', 'U10', 'V10', 'Q2', 'SWDOWN', 'GLW', 'LH', 'HFX', 'PBLH', 'UST']
 target_name = 'T2'
 
-train_start, train_end = '2020-01-01', '2020-01-20'
-val_start, val_end = '2020-01-21', '2020-01-25'
-test_start, test_end = '2020-01-26', '2020-01-31'
-
-# =========== download data ==============
+# =========== load data ==============
 ds = xr.open_dataset(
     wrf_path,
     engine='netcdf4',
