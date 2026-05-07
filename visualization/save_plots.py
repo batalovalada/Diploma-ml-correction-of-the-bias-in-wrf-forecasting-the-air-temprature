@@ -4,13 +4,14 @@ import numpy as np
 # scatter plot ----------------------------
 def save_scatter_plot(pred, true, mask, path_dir, model_name):
     mask_flat = mask.flatten().astype(bool)
-    lims = [
-        min(true.min(), pred.min()),
-        max(true.max(), pred.max())
-    ]
+
+    x = true.flatten()[mask_flat]
+    y = pred.flatten()[mask_flat]
+
+    lims = [min(x.min(), y.min()), max(x.max(), y.max())]
 
     plt.figure(figsize=(10, 6))
-    plt.scatter(true.flatten()[mask_flat], pred.flatten()[mask_flat], alpha=0.3)
+    plt.scatter(x, y, alpha=0.3)
     plt.plot(lims, lims, 'r--')
     plt.xlabel("True")
     plt.ylabel("Predicted")

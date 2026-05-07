@@ -1,5 +1,6 @@
 from sklearn.ensemble import RandomForestRegressor
 import joblib
+import optuna
 
 from config.data.features_config import features
 from config.data.split_config import *
@@ -11,7 +12,7 @@ from visualization.save_plots import *
 # ============ paths =============
 path_processed = '../../data/RF/processed/'
 path_params = '../../data/RF/params/'
-path_results = '../../reports/results/RF/'
+path_results = '../../reports/results/RF/opt/'
 
 # ========== parameters ==========
 H = 5 # count of points in height
@@ -22,12 +23,36 @@ def load_npz(path):
     data = np.load(path)
     return data['X'], data['y'], data['mask']
 
+def mse(pred, target):
+    return np.mean((pred - target)**2)
+
 def restore_masked_grid(mask, samples, time, H, W):
     bias_pred = np.full(mask.shape, np.nan)
     bias_pred[mask] = samples
     bias_pred= bias_pred.reshape(time, H, W)
     return bias_pred
 
+def objective(trial):
+
+    params = {
+        'n_estimators': trial.suggest_int('n_estimators', 100, 500),
+        'max_depth': trial.suggest_int('max_depth', 5, 35),
+        'max_features': trial.suggest_categorical('max_features', ["sqrt", "log2", 0.5, 0.7]),
+        'min_samples_leaf': trial.suggest_int('min_samples_leaf', 1,8),
+        'min_samples_split': trial.suggest_int('min_samples_split', 2, 15),
+    }
+
+    model = RandomForestRegressor(
+        **params,
+        n_jobs=N_JOBS,
+        random_state=RANDOM_STATE
+    )
+
+    model.fit(X_train, y_train)
+
+    val_pred = model.predict(X_val)
+
+    return mse(y_val, val_pred)
 
 # ============ load data =========
 X_train, y_train, mask_train = load_npz(path_processed + 'train.npz')
@@ -40,63 +65,25 @@ T2_mask_test = np.load(path_processed+'t2_mask_test.npy')
 
 time_lagged = np.load(path_params+'time_lagged.npy')
 time_test_mask = np.load(path_processed+'rf_time_mask.npy')
-# ============= model ============
-RF = RandomForestRegressor(
-    n_estimators=N_ESTIMATORS,
-    max_depth=MAX_DEPTH_SIZE,
-    n_jobs=N_JOBS,
-    random_state=RANDOM_STATE,
-    max_features=MAX_FEATURES,
-    min_samples_leaf=MIN_SAMPLES_LEAF,
-    min_samples_split=MIN_SAMPLES_SPLIT,
-)
+
+# ======== select params with Optuna ========
+study = optuna.create_study(direction='minimize')
+study.optimize(objective, n_trials=30)
+
+best_params = study.best_params
+print(best_params)
 
 # =========== train ================
-RF.fit(X_train, y_train)
+RF = RandomForestRegressor(
+    **best_params,
+    n_jobs=N_JOBS,
+    random_state=RANDOM_STATE
+)
 
-# ======== validation to correct models_params ========
-val_pred = RF.predict(X_val)
+RF.fit(X_train, y_train)
 
 # =========== test =========================
 test_pred = RF.predict(X_test)
-
-# ======== restore val data (to select model's models_params on validation) ==========
-val_mask = ((time_lagged >= val_start_dt) & (time_lagged <= val_end_dt))
-time_val = len(time_lagged[val_mask])
-
-val_pred_restored = restore_masked_grid(mask_val, val_pred, time_val, H, W)
-y_val_restored = restore_masked_grid(mask_val, y_val, time_val, H, W)
-mask_val_reshaped = mask_val.reshape(time_val, H, W)
-
-# ============= Val Metrics ==========================
-rmse = masked_rmse(val_pred_restored, y_val_restored, mask_val_reshaped)
-mae = masked_mae(val_pred_restored, y_val_restored, mask_val_reshaped)
-bias = masked_bias(val_pred_restored, y_val_restored, mask_val_reshaped)
-corr = masked_corr(val_pred_restored, y_val_restored, mask_val_reshaped)
-
-print("\n\nVal metrics:")
-print(f"RMSE: {rmse}")
-print(f"MAE:  {mae}")
-print(f"Bias: {bias}")
-print(f"Corr: {corr}")
-
-with open(path_results+'validation/'+ f"metrics_1.txt", "w") as f:
-    f.write("RF params\n\n")
-    f.write(f"lags: {lags}\n")
-    f.write(f"N_ESTIMATORS: {N_ESTIMATORS}\n")
-    f.write(f"MAX_DEPTH_SIZE: {MAX_DEPTH_SIZE}\n")
-    f.write(f"N_JOBS: {N_JOBS}\n")
-    f.write(f"RANDOM_STATE: {RANDOM_STATE}\n")
-    f.write(f"MAX_FEATURES: {MAX_FEATURES}\n")
-    f.write(f"MIN_SAMPLES_LEAF: {MIN_SAMPLES_LEAF}\n")
-    f.write(f"MIN_SAMPLES_SPLIT: {MIN_SAMPLES_SPLIT}\n\n\n")
-    f.write("Validation Metrics\n\n")
-    f.write(f"RMSE: {rmse}\n")
-    f.write(f"MAE: {mae}\n")
-    f.write(f"Bias: {bias}\n")
-    f.write(f"Corr: {corr}\n\n")
-
-
 
 # #============= restore test data =============================
 test_mask = ((time_lagged >= test_start_dt) & (time_lagged <= test_end_dt))
