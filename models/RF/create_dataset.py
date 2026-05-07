@@ -10,7 +10,7 @@ path_selected = '../../data/base_processed/selected/'
 path_t2m =  '../../data/base_processed/t2m/'
 path_processed = '../../data/RF/processed/'
 path_params = '../../data/RF/params/'
-path_min_time = '../../data/ConvLSTM/processed/'
+path_min_time = '../../data/ConvLSTM/base/processed/'
 
 #===========functions =========================
 def split_by_mask(X, y, mask, time_lagged):

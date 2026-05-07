@@ -6,8 +6,8 @@ from config.data.split_config import *
 # ========================================= paths ========================
 path_selected = '../../data/base_processed/selected/'
 path_t2m = '../../data/base_processed/t2m/'
-path_norm = '../../data/ConvLSTM/norm_params/'
-path_processed = '../../data/ConvLSTM/processed/'
+path_norm = '../../data/ConvLSTM/latlon/norm_params/'
+path_processed = '../../data/ConvLSTM/latlon/processed/'
 
 # ======= parameters ================================================
 lookback = 4
@@ -57,7 +57,10 @@ ds_era5 = xr.open_dataset(path_selected+'ds_selected_era5.nc')
 t2_wrf_ds = xr.open_dataset(path_t2m+'t2_wrf_test.nc')
 t2_era5_ds = xr.open_dataset(path_t2m+'t2_era5_test.nc')
 
-ds_wrf = ds_wrf.drop_vars(['XLAT', 'XLONG'])  # model uses nodes numbers
+#ds_wrf = ds_wrf.drop_vars(['XLAT', 'XLONG'])  # model uses nodes numbers
+ds_wrf['lat'] = ds_wrf.XLAT
+ds_wrf['lon'] = ds_wrf.XLONG
+
 # creating X, y with train, val, test ======================================
 X_ds = ds_wrf
 y_ds = ds_era5['t2m'] - ds_wrf['T2']
