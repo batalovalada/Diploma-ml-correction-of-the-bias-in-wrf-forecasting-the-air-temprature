@@ -20,7 +20,7 @@ def save_scatter_plot(pred, true, mask, path_dir, model_name):
     plt.close()
 
 # Spatial RMSE map -------------------------
-def save_rmse_map(pred, true, mask, path_dir, model_name):
+def save_rmse_map(pred, true, mask, path_dir, model_name, vmin=0, vmax=8):
     diff = (pred - true) ** 2
     numerator = np.sum(diff * mask, axis=0)
     denominator = np.sum(mask, axis=0)
@@ -28,7 +28,7 @@ def save_rmse_map(pred, true, mask, path_dir, model_name):
 
     rmse_map = np.sqrt(numerator / denominator)
     plt.figure(figsize=(10, 6))
-    plt.imshow(rmse_map, cmap="viridis")
+    plt.imshow(rmse_map, cmap="viridis", vmin=vmin, vmax=vmax)
     plt.colorbar()
     plt.title(f"{model_name} RMSE map")
     plt.savefig(path_dir+"rmse_map.png")

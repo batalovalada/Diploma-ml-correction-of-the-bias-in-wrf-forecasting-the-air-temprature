@@ -57,7 +57,7 @@ ds_era5 = xr.open_dataset(path_selected+'ds_selected_era5.nc')
 t2_wrf_ds = xr.open_dataset(path_t2m+'t2_wrf_test.nc')
 t2_era5_ds = xr.open_dataset(path_t2m+'t2_era5_test.nc')
 
-#ds_wrf = ds_wrf.drop_vars(['XLAT', 'XLONG'])  # model uses nodes numbers
+# ds_wrf = ds_wrf.drop_vars(['XLAT', 'XLONG'])  # model uses nodes numbers
 ds_wrf['lat'] = ds_wrf.XLAT
 ds_wrf['lon'] = ds_wrf.XLONG
 

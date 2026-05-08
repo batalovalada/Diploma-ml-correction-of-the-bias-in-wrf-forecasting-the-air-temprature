@@ -9,9 +9,9 @@ from visualization.save_metrics import save_metrics
 from visualization.save_plots import *
 
 #================== paths ===============================
-path_processed = '../../data/ConvLSTM/latlon/processed/'
-path_norm = '../../data/ConvLSTM/latlon/norm_params/'
-path_results = '../../reports/results/ConvLSTM/latlon/'
+path_processed = '../../data/ConvLSTM/base/processed/'
+path_norm = '../../data/ConvLSTM/base/norm_params/'
+path_results = '../../reports/results/ConvLSTM/base/'
 
 # ============= parameters =============================
 device = torch.device('cpu')
@@ -90,7 +90,7 @@ def train_model(params, Train_Dataset, Val_Dataset):
         val_loss /= len(Val_Loader)
         val_losses.append(val_loss)
 
-        # EARLY STOPPING
+        # early stopping
         if val_loss < best_val:
             best_val = val_loss
             counter = 0
@@ -113,7 +113,7 @@ def train_model(params, Train_Dataset, Val_Dataset):
 # optuna function ====================================
 def objective(trial):
     params={
-        'batch': trial.suggest_categorical('batch', [4, 8, 16]),
+        'batch': trial.suggest_categorical('batch', [16, 24]),
         'lr': trial.suggest_float('lr', 1e-5, 3e-3, log=True),
         'hidden_dim': trial.suggest_categorical('hidden_dim', [16, 32, 48, 64]),
     }
@@ -160,7 +160,7 @@ train_losses = final_train['train_losses']
 val_losses = final_train['val_losses']
 
 # ===================== Test =======================
-Test_Loader = DataLoader(Test_Dataset, batch_size=best_params['batch'], shuffle=False) #with opt batch size
+Test_Loader = DataLoader(Test_Dataset, batch_size=best_params['batch'], shuffle=False) #with latlon batch size
 
 model.eval()
 
@@ -247,3 +247,14 @@ np.savez(path_results+"ConvLSTM.npz",
 
 # save metrics
 save_metrics(path_results, rmse, mae, bias, corr, rmse_wrf, rmse_corr)
+
+# save train params
+with open(path_results + "model_params.txt", "w") as f:
+    f.write("Optimized params by Optuna:\n")
+    f.write(f"batch size: {best_params['batch']}\n")
+    f.write(f"hidden dim: {best_params['hidden_dim']}\n")
+    f.write(f"lr: {best_params['lr']}\n\n")
+    f.write("Fixed params:\n")
+    f.write(f"epochs: {EPOCHS}\n")
+    f.write(f"input dim: {INPUT_DIM}\n")
+    f.write(f"kernel size: {KERNEL_SIZE}\n")

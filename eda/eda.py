@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import xarray as xr
 import pandas as pd
+import numpy as np
 from config.data.split_config import train_start, train_end
 from config.data.features_config import features
 
@@ -11,9 +12,7 @@ reports_path = '../reports/eda/'
 eda_report = 'data_info.txt'
 wrf_raw_path = '../data/base_processed/full/df_full_wrf.parquet'
 wrf_nodes_path = '../data/base_processed/selected/df_selected_eda.parquet'
-
-# =========== parameters =================
-target_name = 'T2'
+era5_path = '../data/base_processed/selected/df_selected_era5.parquet'
 
 # =========== load data ==============
 ds = xr.open_dataset(
@@ -25,6 +24,7 @@ ds = xr.open_dataset(
 
 df = pd.read_parquet(wrf_raw_path)
 df_nodes = pd.read_parquet(wrf_nodes_path)
+df_era5 = pd.read_parquet(era5_path)
 
 # write file about dataset ----------------
 print('(1) Запись файла data_info.txt ...\n')
@@ -46,6 +46,7 @@ except Exception as e:
 
 # ============ create train datasets for analysis ========
 df_train = df_nodes[(df_nodes['time'] >= train_start) & (df_nodes['time'] <= train_end)]
+df_train_era5 =  df_era5[(df_era5['time'] >= train_start) & (df_era5['time'] <= train_end)]
 
 # =========== train data analysis ======================
 df_center = df_train[df_train['node_id']=='2-2'].copy() # take center node (29, 23)
@@ -59,7 +60,7 @@ plt.savefig(reports_path+'features_hist.png', dpi=300, bbox_inches='tight')
 plt.close()
 
 corr = df_center[features].corr(numeric_only=True)
-corr_T2 = corr[target_name].sort_values(ascending=False)
+corr_T2 = corr['T2'].sort_values(ascending=False)
 
 # autocorrelation for analyse window size
 autocorr_4 = df_center['T2'].autocorr(lag=4)
@@ -90,4 +91,66 @@ plt.figure(figsize=(10, 8))
 sns.heatmap(corr, annot=True, cmap='coolwarm', fmt='.2f')
 plt.title('Корреляционная матрица (train)')
 plt.savefig(reports_path+'corr_matrix.png', dpi=300, bbox_inches='tight')
+plt.close()
+
+# spatial-temporal T2 analysis ===========================
+T2_wrf_mean = df_train.groupby(['south_north', 'west_east'])['T2'].mean().unstack()
+T2_era5_mean = df_train_era5.groupby(['south_north', 'west_east'])['t2m'].mean().unstack()
+
+# Spatial mean T2 map
+fig, axes = plt.subplots(1, 2, figsize=(16, 6), constrained_layout=True)
+
+im0 = axes[0].imshow(T2_wrf_mean.values, cmap='coolwarm',  vmin=250, vmax=280)
+axes[0].set_title("WRF mean temperature")
+axes[0].set_xlabel("Longitude index")
+axes[0].set_ylabel("Latitude index")
+
+im1 = axes[1].imshow(T2_era5_mean.values, cmap='coolwarm',  vmin=250, vmax=280)
+axes[1].set_title("ERA5 mean temperature")
+axes[1].set_xlabel("Longitude index")
+axes[1].set_ylabel("Latitude index")
+
+fig.colorbar(im0, ax=axes, label='Temperature (K)', fraction=0.046, pad=0.04)
+plt.savefig(reports_path+"mean_temperature_map.png")
+plt.close()
+
+# temporal T2 dynamics
+T2_wrf_time = df_train.groupby('time')['T2'].mean()
+T2_era5_time = df_train_era5.groupby('time')['t2m'].mean()
+
+
+plt.figure(figsize=(10,5))
+
+plt.plot(T2_wrf_time.index, T2_wrf_time.values, label='WRF')
+plt.plot(T2_era5_time.index, T2_era5_time.values, label='ERA5')
+
+plt.xlabel("Time step")
+plt.ylabel("Temperature (K)")
+plt.title("Mean temperature temporal evolution")
+
+plt.legend()
+plt.grid()
+
+plt.tight_layout()
+plt.savefig(reports_path+"temperature_timeseries.png")
+plt.close()
+
+# Spatial variability map (std map)
+T2_wrf_std = df_train.groupby(['south_north', 'west_east'])['T2'].std().unstack()
+T2_era5_std = df_train_era5.groupby(['south_north', 'west_east'])['t2m'].std().unstack()
+
+fig, axes = plt.subplots(1, 2, figsize=(16, 6), constrained_layout=True)
+
+im2 = axes[0].imshow(T2_wrf_std.values, cmap='viridis', vmin=0, vmax=8)
+axes[0].set_title("WRF temperature variability (std)")
+axes[0].set_xlabel("Longitude index")
+axes[0].set_ylabel("Latitude index")
+
+im3 = axes[1].imshow(T2_era5_std.values, cmap='viridis', vmin=0, vmax=8)
+axes[1].set_title("ERA5 temperature variability (std)")
+axes[1].set_xlabel("Longitude index")
+axes[1].set_ylabel("Latitude index")
+
+fig.colorbar(im2, ax=axes, label='Std temperature', fraction=0.046, pad=0.04)
+plt.savefig(reports_path+"temperature_std_map.png")
 plt.close()

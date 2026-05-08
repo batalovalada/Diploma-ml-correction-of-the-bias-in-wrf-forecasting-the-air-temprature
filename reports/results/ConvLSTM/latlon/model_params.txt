@@ -1,0 +1,9 @@
+Optimized params by Optuna:
+batch size: 24
+hidden dim: 64
+lr: 0.002509178896660188
+
+Fixed params:
+epochs: 20
+input dim: 13
+kernel size: 3

@@ -10,9 +10,9 @@ from visualization.save_metrics import save_metrics
 from visualization.save_plots import *
 
 # ============ paths =============
-path_processed = '../../data/RF/processed/'
-path_params = '../../data/RF/params/'
-path_results = '../../reports/results/RF/opt/'
+path_processed = '../../data/RF/latlon/processed/'
+path_params = '../../data/RF/latlon/params/'
+path_results = '../../reports/results/RF/latlon/'
 
 # ========== parameters ==========
 H = 5 # count of points in height
@@ -172,3 +172,15 @@ np.savez(
 
 # save metrics
 save_metrics(path_results, rmse, mae, bias, corr, rmse_wrf, rmse_corr)
+
+# save train params
+with open(path_results + "model_params.txt", "w") as f:
+    f.write("Optimized params by Optuna:\n")
+    f.write(f"n_estimators: {best_params['n_estimators']}\n")
+    f.write(f"max depth: {best_params['max_depth']}\n")
+    f.write(f"max features: {best_params['max_features']}\n")
+    f.write(f"min samples leaf: {best_params['min_samples_leaf']}\n")
+    f.write(f"min_samples_split: {best_params['min_samples_split']}\n\n")
+    f.write("Fixed params:\n")
+    f.write(f"n jobs: {N_JOBS}\n")
+    f.write(f"random state: {RANDOM_STATE}\n")

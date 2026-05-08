@@ -8,8 +8,8 @@ from config.models_params.rf import lags
 # ============= paths =======================
 path_selected = '../../data/base_processed/selected/'
 path_t2m =  '../../data/base_processed/t2m/'
-path_processed = '../../data/RF/processed/'
-path_params = '../../data/RF/params/'
+path_processed = '../../data/RF/latlon/processed/'
+path_params = '../../data/RF/latlon/params/'
 path_min_time = '../../data/ConvLSTM/base/processed/'
 
 #===========functions =========================

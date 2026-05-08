@@ -78,7 +78,7 @@ t2_wrf_test = ds_wrf['T2'].sel(time=slice(test_start, test_end))
 df_eda.to_parquet(path_selected + 'df_selected_eda.parquet', index=False) # -> eda.py
 df_wrf.to_parquet(path_selected + 'df_selected_wrf.parquet', index=False) # -> model preprocess
 ds_wrf.to_netcdf(path_selected + "ds_selected_wrf.nc") # -> model preprocess
-df_era5.to_parquet(path_selected + 'df_selected_era5.parquet', index=False) # -> model preprocess
+df_era5.to_parquet(path_selected + 'df_selected_era5.parquet', index=False) # -> model preprocess, eda.py
 ds_era5.to_netcdf(path_selected + 'ds_selected_era5.nc') # -> model preprocess
 
 # save t2 era5 and t2 wrf ----------------------------------------------------------------------
