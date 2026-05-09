@@ -1,7 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-# scatter plot ----------------------------
+from config.data.features_config import features
+
+# ========= common plots ====================================
+# scatter plot
 def save_scatter_plot(pred, true, mask, path_dir, model_name):
     mask_flat = mask.flatten().astype(bool)
 
@@ -19,7 +22,7 @@ def save_scatter_plot(pred, true, mask, path_dir, model_name):
     plt.savefig(path_dir+"compare.png")
     plt.close()
 
-# Spatial RMSE map -------------------------
+# Spatial RMSE map
 def save_rmse_map(pred, true, mask, path_dir, model_name, vmin=0, vmax=8):
     diff = (pred - true) ** 2
     numerator = np.sum(diff * mask, axis=0)
@@ -34,7 +37,7 @@ def save_rmse_map(pred, true, mask, path_dir, model_name, vmin=0, vmax=8):
     plt.savefig(path_dir+"rmse_map.png")
     plt.close()
 
-# correction map with bias error has done by wrf and model ============================
+# correction map with bias error has done by wrf and model
 def corrected_map_row(ax_raw, fig, T2_wrf, T2_era5, T2_corrected, error_wrf, error_corr, model_name, vmin=235, vmax=290, vmin_err=-10, vmax_err=10):
     # WRF
     im_t2 = ax_raw[0].imshow(T2_wrf, cmap="coolwarm", vmin=vmin, vmax=vmax)
@@ -96,3 +99,60 @@ def save_corrected_map(T2_wrf, T2_era5, T2_corrected, path_dir, model_name):
     plt.tight_layout()
     plt.savefig(path_dir+"results_map.png")
     plt.close()
+
+# ===================== ML and XGBoost plots ==============================
+# feature importance plot
+def save_feature_importance_plot(model, lags, path_dir, model_name):
+    importances = model.feature_importances_
+    feature_names_expanded = []
+
+    for lag in range(lags):
+        for f in features:
+            feature_names_expanded.append(f"{f}_lag{lag + 1}")
+
+    feature_names_expanded += ["lat", "lon"] #if there are lat lon features
+
+    plt.figure(figsize=(12, 10))
+    plt.barh(feature_names_expanded, importances)
+    plt.xlabel("Importance")
+    plt.title(f"Feature importance ({model_name})")
+    plt.tight_layout()
+    plt.savefig(path_dir + 'feature_importance.png')
+    plt.close()
+
+# residual distribution
+def save_radial_distribution_plot(pred, true, mask, path_dir, model_name):
+    residuals = pred - true
+    residuals_flat = residuals[mask].ravel()
+
+    plt.figure(figsize=(10, 6))
+    plt.hist(residuals_flat, bins=50)
+    plt.axvline(0, linestyle='--')
+    plt.title(f"Residual distribution ({model_name})")
+    plt.xlabel("Error")
+    plt.ylabel("Frequency")
+    plt.savefig(path_dir + 'residual_distribution.png')
+    plt.close()
+
+# ======================= ConvLSTM plots =================================
+# loss plot
+def save_loss_plot(train_losses, val_losses, path_dir):
+    plt.figure(figsize=(10, 6))
+    plt.plot(train_losses, label="Train")
+    plt.plot(val_losses, label="Validation")
+    plt.legend()
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Training curve (ConvLSTM)")
+    plt.savefig(path_dir + "loss_curve.png")
+    plt.close()
+
+
+
+
+
+
+
+
+
+

@@ -5,7 +5,6 @@ import copy
 from model import *
 from config.models_params.convlstm import EPOCHS
 from metrics.metrics import *
-from visualization.save_metrics import save_metrics
 from visualization.save_plots import *
 
 #================== paths ===============================
@@ -38,19 +37,20 @@ def tensor_data(X, y, mask):
 def masked_mse(pred, target, mask):
     return torch.mean((pred[mask] - target[mask])**2)
 
-def train_model(params, Train_Dataset, Val_Dataset):
+def build_model(params):
+    return ConvLSTM(hidden_dim=params['hidden_dim']).to(device)
+
+def train_model(model, params, Train_Dataset, Val_Dataset):
     Train_Loader = DataLoader(Train_Dataset, batch_size=params['batch'], shuffle=True)
     Val_Loader = DataLoader(Val_Dataset, batch_size=params['batch'], shuffle=False)
-
-    model = ConvLSTM(hidden_dim=params['hidden_dim']).to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=params['lr'])
 
     # =================== Training ==============================
+    best_state = copy.deepcopy(model.state_dict())
     best_val = float('inf')
     counter = 0
     patience = 5
-    best_model_state = None
 
     train_losses = []
     val_losses = []
@@ -94,7 +94,7 @@ def train_model(params, Train_Dataset, Val_Dataset):
         if val_loss < best_val:
             best_val = val_loss
             counter = 0
-            best_model_state = copy.deepcopy(model.state_dict())
+            best_state = copy.deepcopy(model.state_dict())
         else:
             counter += 1
 
@@ -102,24 +102,20 @@ def train_model(params, Train_Dataset, Val_Dataset):
             print("Early stopping")
             break
 
-    model.load_state_dict(best_model_state)
-    return {
-        'model': model,
-        'train_losses': train_losses,
-        'val_losses': val_losses,
-    }
+    model.load_state_dict(best_state)
+    return train_losses, val_losses
 
 
 # optuna function ====================================
 def objective(trial):
     params={
-        'batch': trial.suggest_categorical('batch', [16, 24]),
+        'batch': trial.suggest_categorical('batch', [24]),
         'lr': trial.suggest_float('lr', 1e-5, 3e-3, log=True),
-        'hidden_dim': trial.suggest_categorical('hidden_dim', [16, 32, 48, 64]),
+        'hidden_dim': trial.suggest_categorical('hidden_dim', [64]),
     }
-
-    result = train_model(params, Train_Dataset, Val_Dataset)
-    val_loss = min(result['val_losses'])
+    model = build_model(params)
+    _, val_losses = train_model(model, params, Train_Dataset, Val_Dataset)
+    val_loss = min(val_losses)
     return val_loss
 
 #================= load data =======================
@@ -142,7 +138,6 @@ Test_Dataset = WeatherDataset(X_test, y_test, mask_test)
 
 # ================ select model's params with Optuna ====================================
 study = optuna.create_study(direction="minimize")
-
 study.optimize(objective, n_trials=20)
 best_params = study.best_params
 
@@ -150,19 +145,13 @@ print("Best params:", best_params)
 print("Best value:", study.best_value)
 
 # ===================== training ConvLSTM model ======================
-final_train = train_model(
-    best_params,
-    Train_Dataset,
-    Val_Dataset
-)
-model = final_train['model']
-train_losses = final_train['train_losses']
-val_losses = final_train['val_losses']
+best_model = build_model(best_params)
+train_losses, val_losses = train_model(best_model, best_params, Train_Dataset, Val_Dataset)
 
 # ===================== Test =======================
-Test_Loader = DataLoader(Test_Dataset, batch_size=best_params['batch'], shuffle=False) #with latlon batch size
+Test_Loader = DataLoader(Test_Dataset, batch_size=best_params['batch'], shuffle=False)
 
-model.eval()
+best_model.eval()
 
 all_preds = []
 all_targets = []
@@ -174,7 +163,7 @@ with torch.no_grad():
         y_batch = y_batch.to(device)
         mask_batch = mask_batch.to(device)
 
-        pred = model(X_batch)
+        pred = best_model(X_batch)
 
         all_preds.append(pred.cpu().numpy())
         all_targets.append(y_batch.cpu().numpy())
@@ -195,58 +184,24 @@ T2_corrected = T2_wrf_test + y_pred
 # return nan by mask, because model interp values in nodes, where era5 = nan
 T2_corrected[~y_mask] = np.nan
 
-# ============= Metrics ==========================
-rmse = masked_rmse(y_pred, y_true, y_mask)
-mae = masked_mae(y_pred, y_true, y_mask)
-bias = masked_bias(y_pred, y_true, y_mask)
-corr = masked_corr(y_pred, y_true, y_mask)
-
-print("\n\nTest metrics:")
-print(f"RMSE: {rmse}")
-print(f"MAE:  {mae}")
-print(f"Bias: {bias}")
-print(f"Corr: {corr}")
-
-# rmse metric to compare WRF and ConvLSTM
-rmse_wrf = masked_rmse(T2_wrf_test, T2_era5_test, y_mask)
-rmse_corr = masked_rmse(T2_corrected, T2_era5_test, y_mask)
-
-print(f"WRF RMSE: {rmse_wrf}")
-print(f"Corrected RMSE: {rmse_corr}")
+# save and print metrics ==========================
+define_and_save_metrics(y_pred, y_true, y_mask, T2_wrf_test, T2_corrected, T2_era5_test, path_results)
 
 # vizualization ========================================
-# loss plot
-plt.figure(figsize=(10, 6))
-plt.plot(train_losses, label="Train")
-plt.plot(val_losses, label="Validation")
-plt.legend()
-plt.xlabel("Epoch")
-plt.ylabel("Loss")
-plt.title("Training curve (ConvLSTM)")
-plt.savefig(path_results+"loss_curve.png")
-plt.close()
-
-# scatter plot
+save_loss_plot(train_losses, val_losses, path_results)
 save_scatter_plot(y_pred, y_true, y_mask, path_results, 'ConvLSTM')
-
-# Spatial RMSE map
 save_rmse_map(y_pred, y_true, y_mask, path_results, 'ConvLSTM')
-
-# ConvLSTM visualization
 save_corrected_map(T2_wrf_test, T2_era5_test, T2_corrected, path_results, 'ConvLSTM')
 
 # save ConvLSTM =======================================
 # save model
-torch.save(model.state_dict(), path_results+"model.pth")
+torch.save(best_model.state_dict(), path_results+"model.pth")
 
 # save results
 np.savez(path_results+"ConvLSTM.npz",
          y_pred=y_pred,
          y_true=y_true,
          mask=y_mask)
-
-# save metrics
-save_metrics(path_results, rmse, mae, bias, corr, rmse_wrf, rmse_corr)
 
 # save train params
 with open(path_results + "model_params.txt", "w") as f:

@@ -1,9 +1,9 @@
 Optimized params by Optuna:
-n_estimators: 144
-max depth: 33
+n_estimators: 344
+max depth: 30
 max features: 0.7
-min samples leaf: 1
-min_samples_split: 7
+min samples leaf: 3
+min_samples_split: 9
 
 Fixed params:
 n jobs: 6
