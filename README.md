@@ -126,7 +126,9 @@ project/
 - data/preprocessed/ — синхронизированные и подготовленные данные
 
 ## Схема этапов работы
+```text
 ERA5 -> WPS -> WRF -> preprocessing -> ML correction -> metrics -> visualization
+```
 
 ## Инструкция запуска
 1. Установка системных зависимостей: HDF5, JasPer, libpng, MPICH, NetCDF-C, NetCDF-Fortran, Zlib.
@@ -153,21 +155,21 @@ ERA5 -> WPS -> WRF -> preprocessing -> ML correction -> metrics -> visualization
    - определение начальных и граничных условий: run_real.sh -> real.exe,
    - моделирование атмосферных параметров: run_wrf.sh -> wrf.exe.
 7. Ретроспективное моделирование WRF
- - период: 2020 год
- - временной шаг: 3 часа
- - пространственное разрешение: 9 км
+   - период: 2020 год
+   - временной шаг: 3 часа
+   - пространственное разрешение: 9 км
 
    Моделирование выполняется по месяцам с изменением: start_date, end_date в конфигурациях WPS/WRF.
 
 8. Обработка и ML-пайплайн:
- - синхронизация ERA5 и WRF
- - формирование признаков
- - выбор 25 контрольных точек
- - разведочный анализ данных
- - обучение моделей Random Forest (RF), XGBoost (XGB), ConvLSTM
+   - синхронизация ERA5 и WRF
+   - формирование признаков
+   - выбор 25 контрольных точек
+   - разведочный анализ данных
+   - обучение моделей Random Forest (RF), XGBoost (XGB), ConvLSTM
 9. Обучение и оценка моделей. Скрипты:
- - models/ConvLSTM/train.py
- - models/tree_models/train.py
+   - models/ConvLSTM/train.py
+   - models/tree_models/train.py
 
    Метрики: RMSE, MAE, Bias, Pearson correlation (r).
 10. Результирующие метрики оценки, графики обучения и результатов коррекции хранятся в reports/models/.  
