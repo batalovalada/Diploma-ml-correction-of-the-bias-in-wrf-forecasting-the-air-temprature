@@ -1,5 +1,0 @@
-BATCH_SIZE = 8
-INPUT_DIM = 11 # selected features count
-HIDDEN_DIM = 32
-KERNEL_SIZE = 3
-EPOCHS = 20

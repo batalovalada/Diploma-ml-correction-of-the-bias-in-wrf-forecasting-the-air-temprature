@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
 
-from config.models_params.convlstm import *
+from config.hyperparameters.convlstm import *
 
 # ======================================================
 class WeatherDataset(Dataset):

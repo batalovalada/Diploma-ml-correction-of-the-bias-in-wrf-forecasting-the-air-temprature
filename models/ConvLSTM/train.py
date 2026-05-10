@@ -3,14 +3,14 @@ import optuna
 import copy
 
 from model import *
-from config.models_params.convlstm import EPOCHS
-from metrics.metrics import *
+from config.hyperparameters.convlstm import EPOCHS
+from metrics_utils.metrics import *
 from visualization.save_plots import *
 
 #================== paths ===============================
-path_processed = '../../data/ConvLSTM/base/processed/'
-path_norm = '../../data/ConvLSTM/base/norm_params/'
-path_results = '../../reports/results/ConvLSTM/base/'
+path_processed = '../../data/ConvLSTM/month/base/processed/'
+path_norm = '../../data/ConvLSTM/month/base/norm_params/'
+path_results = '../../reports/models/ConvLSTM/month/base/'
 
 # ============= parameters =============================
 device = torch.device('cpu')

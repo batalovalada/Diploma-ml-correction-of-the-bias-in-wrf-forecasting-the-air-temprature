@@ -2,17 +2,28 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import xarray as xr
 import pandas as pd
-import numpy as np
-from config.data.split_config import train_start, train_end
+from config.data.split_year_config import train_start, train_end
 from config.data.features_config import features
 
 # ========= paths =======================
-wrf_path = '../data/WRF_output/wrfout_d01_2020-01-01_00:00:00'
-reports_path = '../reports/eda/'
+wrf_path = '../data/WRF_output/year/wrfout_d01_2020-01-01_00:00:00'
+reports_path = '../reports/eda/year/'
 eda_report = 'data_info.txt'
-wrf_raw_path = '../data/base_processed/full/df_full_wrf.parquet'
-wrf_nodes_path = '../data/base_processed/selected/df_selected_eda.parquet'
-era5_path = '../data/base_processed/selected/df_selected_era5.parquet'
+wrf_raw_path = '../data/preprocessed/year/full/df_full_wrf.parquet'
+wrf_nodes_path = '../data/preprocessed/year/selected/df_selected_eda.parquet'
+era5_path = '../data/preprocessed/year/selected/df_selected_era5.parquet'
+
+# ========= functions ===============
+def get_season(month):
+    if month in [12, 1, 2]:
+        return "Winter"
+    elif month in [3, 4, 5]:
+        return "Spring"
+    elif month in [6, 7, 8]:
+        return "Summer"
+    else:
+        return "Autumn"
+
 
 # =========== load data ==============
 ds = xr.open_dataset(
@@ -94,32 +105,48 @@ plt.savefig(reports_path+'corr_matrix.png', dpi=300, bbox_inches='tight')
 plt.close()
 
 # spatial-temporal T2 analysis ===========================
-T2_wrf_mean = df_train.groupby(['south_north', 'west_east'])['T2'].mean().unstack()
-T2_era5_mean = df_train_era5.groupby(['south_north', 'west_east'])['t2m'].mean().unstack()
+df_train["season"] = df_train['time'].dt.month.map(get_season)
+df_train_era5["season"] = df_train_era5['time'].dt.month.map(get_season)
+
+seasons = ["Winter", "Spring", "Summer", "Autumn"]
 
 # Spatial mean T2 map
-fig, axes = plt.subplots(1, 2, figsize=(16, 6), constrained_layout=True)
+fig, axes = plt.subplots(4, 2, figsize=(14, 20), constrained_layout=True)
 
-im0 = axes[0].imshow(T2_wrf_mean.values, cmap='coolwarm',  vmin=250, vmax=280)
-axes[0].set_title("WRF mean temperature")
-axes[0].set_xlabel("Longitude index")
-axes[0].set_ylabel("Latitude index")
+for i, season in enumerate(seasons):
+    # WRF
+    wrf_season = df_train[df_train["season"] == season]
+    T2_wrf_mean = wrf_season.groupby(["south_north", "west_east"])["T2"].mean().unstack()
 
-im1 = axes[1].imshow(T2_era5_mean.values, cmap='coolwarm',  vmin=250, vmax=280)
-axes[1].set_title("ERA5 mean temperature")
-axes[1].set_xlabel("Longitude index")
-axes[1].set_ylabel("Latitude index")
+    im0 = axes[i, 0].imshow(T2_wrf_mean.values, cmap="coolwarm", vmin=250, vmax=300)
 
-fig.colorbar(im0, ax=axes, label='Temperature (K)', fraction=0.046, pad=0.04)
-plt.savefig(reports_path+"mean_temperature_map.png")
+    axes[i, 0].set_title(f"WRF mean temperature ({season})")
+    axes[i, 0].set_xlabel("Longitude index")
+    axes[i, 0].set_ylabel("Latitude index")
+
+    # ERA5
+    era5_season = df_train_era5[df_train_era5["season"] == season]
+    T2_era5_mean = era5_season.groupby(["south_north", "west_east"])["t2m"].mean().unstack()
+
+    im1 = axes[i, 1].imshow(T2_era5_mean.values, cmap="coolwarm", vmin=250, vmax=300)
+
+    axes[i, 1].set_title(f"ERA5 mean temperature ({season})")
+    axes[i, 1].set_xlabel("Longitude index")
+    axes[i, 1].set_ylabel("Latitude index")
+
+
+    fig.colorbar(im0, ax=axes[i], label="Temperature (K)", fraction=0.02, pad=0.02)
+
+plt.savefig(reports_path + "seasonal_mean_temperature_map.png")
 plt.close()
+
 
 # temporal T2 dynamics
 T2_wrf_time = df_train.groupby('time')['T2'].mean()
 T2_era5_time = df_train_era5.groupby('time')['t2m'].mean()
 
 
-plt.figure(figsize=(10,5))
+plt.figure(figsize=(25,5))
 
 plt.plot(T2_wrf_time.index, T2_wrf_time.values, label='WRF')
 plt.plot(T2_era5_time.index, T2_era5_time.values, label='ERA5')
@@ -136,21 +163,32 @@ plt.savefig(reports_path+"temperature_timeseries.png")
 plt.close()
 
 # Spatial variability map (std map)
-T2_wrf_std = df_train.groupby(['south_north', 'west_east'])['T2'].std().unstack()
-T2_era5_std = df_train_era5.groupby(['south_north', 'west_east'])['t2m'].std().unstack()
+fig, axes = plt.subplots(4, 2, figsize=(14, 20), constrained_layout=True)
+vmin_std = 0
+vmax_std = 11
+for i, season in enumerate(seasons):
+    # WRF
+    wrf_season = df_train[df_train["season"] == season]
+    T2_wrf_std = wrf_season.groupby(["south_north", "west_east"])["T2"].std().unstack()
 
-fig, axes = plt.subplots(1, 2, figsize=(16, 6), constrained_layout=True)
+    im2 = axes[i, 0].imshow(T2_wrf_std.values, cmap="viridis", vmin=vmin_std, vmax=vmax_std)
 
-im2 = axes[0].imshow(T2_wrf_std.values, cmap='viridis', vmin=0, vmax=8)
-axes[0].set_title("WRF temperature variability (std)")
-axes[0].set_xlabel("Longitude index")
-axes[0].set_ylabel("Latitude index")
+    axes[i, 0].set_title(f"WRF temperature std ({season})")
+    axes[i, 0].set_xlabel("Longitude index")
+    axes[i, 0].set_ylabel("Latitude index")
 
-im3 = axes[1].imshow(T2_era5_std.values, cmap='viridis', vmin=0, vmax=8)
-axes[1].set_title("ERA5 temperature variability (std)")
-axes[1].set_xlabel("Longitude index")
-axes[1].set_ylabel("Latitude index")
+    # ERA5
+    era5_season = df_train_era5[df_train_era5["season"] == season]
+    T2_era5_std = era5_season.groupby(["south_north", "west_east"])["t2m"].std().unstack()
 
-fig.colorbar(im2, ax=axes, label='Std temperature', fraction=0.046, pad=0.04)
-plt.savefig(reports_path+"temperature_std_map.png")
+    im3 = axes[i, 1].imshow(T2_era5_std.values, cmap="viridis", vmin=vmin_std, vmax=vmax_std)
+
+    axes[i, 1].set_title(f"ERA5 temperature std ({season})")
+    axes[i, 1].set_xlabel("Longitude index")
+    axes[i, 1].set_ylabel("Latitude index")
+
+
+    fig.colorbar(im2, ax=axes[i], label="Temperature std (K)", fraction=0.02, pad=0.02)
+
+plt.savefig(reports_path + "seasonal_temperature_std_map.png")
 plt.close()

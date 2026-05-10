@@ -2,9 +2,12 @@
 scripts/config.sh
 
 # too large data wrf out
-data/WRF_output/wrfout_d01_*
-data/base_processed/full/df_full_wrf.parquet
-data/base_processed/full/ds_full_wrf.nc
+# files like wrfout_d01_2020-01-01_00:00:00
+data/WRF_output/*
+data/preprocessed/month/full/df_full_wrf.parquet
+data/preprocessed/month/full/ds_full_wrf.nc
+data/preprocessed/year/full/df_full_wrf.parquet
+data/preprocessed/year/full/ds_full_wrf.nc
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

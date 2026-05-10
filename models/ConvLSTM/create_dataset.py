@@ -1,13 +1,13 @@
 import xarray as xr
 import numpy as np
 
-from config.data.split_config import *
+from config.data.split_year_config import *
 
 # ========================================= paths ========================
-path_selected = '../../data/base_processed/selected/'
-path_t2m = '../../data/base_processed/t2m/'
-path_norm = '../../data/ConvLSTM/latlon/norm_params/'
-path_processed = '../../data/ConvLSTM/latlon/processed/'
+path_selected = '../../data/preprocessed/year/selected/'
+path_t2m = '../../data/preprocessed/year/t2m/'
+path_norm = '../../data/ConvLSTM/year/base/norm_params/'
+path_processed = '../../data/ConvLSTM/year/base/processed/'
 
 # ======= parameters ================================================
 lookback = 4
@@ -57,9 +57,9 @@ ds_era5 = xr.open_dataset(path_selected+'ds_selected_era5.nc')
 t2_wrf_ds = xr.open_dataset(path_t2m+'t2_wrf_test.nc')
 t2_era5_ds = xr.open_dataset(path_t2m+'t2_era5_test.nc')
 
-# ds_wrf = ds_wrf.drop_vars(['XLAT', 'XLONG'])  # model uses nodes numbers
-ds_wrf['lat'] = ds_wrf.XLAT
-ds_wrf['lon'] = ds_wrf.XLONG
+ds_wrf = ds_wrf.drop_vars(['XLAT', 'XLONG'])  # model uses nodes numbers
+# ds_wrf['lat'] = ds_wrf.XLAT
+# ds_wrf['lon'] = ds_wrf.XLONG
 
 # creating X, y with train, val, test ======================================
 X_ds = ds_wrf
