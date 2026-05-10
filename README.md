@@ -11,7 +11,7 @@
 информации.
 
 Одним из перспективных направлений повышения качества численных прогнозов является применение методов машинного обучения для 
-статистической постобработки результатов моделирования. Использование гибридных подходов, сочетающих физически обоснованные численные модели и алгоритмы
+статистической постобработки результатов моделирования. Использование подходов, сочетающих физически обоснованные численные модели и алгоритмы
 машинного обучения, позволяет выполнять коррекцию систематических ошибок прогноза и повышать точность прогнозируемых метеорологических параметров.
 
 ## Постановка задачи
@@ -106,7 +106,6 @@ project/
 ## Описание данных
 ### Источники данных
 Реанализ ERA5 (ECMWF Copernicus Climate Data Store) для surface-levels, pressure-levels с ресурсов (дата обращения: 04.05.2026):
-
 - pressure-levels: https://cds.climate.copernicus.eu/datasets/reanalysis-era5-pressure-levels?tab=overview,
 - surface-levels: https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=overview.
 
@@ -132,46 +131,43 @@ ERA5 -> WPS -> WRF -> preprocessing -> ML correction -> metrics -> visualization
 ## Инструкция запуска
 1. Установка системных зависимостей: HDF5, JasPer, libpng, MPICH, NetCDF-C, NetCDF-Fortran, Zlib.
 
-А также прочие глобальные зависимости:
+   А также прочие глобальные зависимости:
 
-```bash
-sudo apt install -y \
-build-essential gfortran gcc g++ make cmake m4 perl csh git wget \
-libnetcdf-dev libnetcdff-dev netcdf-bin libhdf5-dev libhdf5-openmpi-dev \
-libpng-dev zlib1g-dev libopenjp2-7-dev openmpi-bin libopenmpi-dev libcurl4-openssl-dev
-```
+   ```bash
+   sudo apt install -y \
+   build-essential gfortran gcc g++ make cmake m4 perl csh git wget \
+   libnetcdf-dev libnetcdff-dev netcdf-bin libhdf5-dev libhdf5-openmpi-dev \
+   libpng-dev zlib1g-dev libopenjp2-7-dev openmpi-bin libopenmpi-dev libcurl4-openssl-dev
+   ```
 
 2. Установка WRF и WPS.
 3. Установка Python-зависимостей
-```bash
-pip install -r requirements.txt
-```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 4. Подготовка данных ERA5. Скачивание выполняется скриптами: scripts/download_era5_year.py, scripts/download_era5_month.py.
 5. Подготовка географических данных о характере поверхности с ресурса: https://www2.mmm.ucar.edu/wrf/src/wps_files/geog_high_res_mandatory.tar.gz (используются только для моделирования).
 6. Запуск WRF pipeline. Единый запуск: scripts/run_pipeline.sh. Он последовательно выполняет:
-
-- предобработку данных: run_wps.sh -> geogrid.exe / ungrib.exe / metgrid.exe,
-- определение начальных и граничных условий: run_real.sh -> real.exe,
-- моделирование атмосферных параметров: run_wrf.sh -> wrf.exe.
+   - предобработку данных: run_wps.sh -> geogrid.exe / ungrib.exe / metgrid.exe,
+   - определение начальных и граничных условий: run_real.sh -> real.exe,
+   - моделирование атмосферных параметров: run_wrf.sh -> wrf.exe.
 7. Ретроспективное моделирование WRF
+ - период: 2020 год
+ - временной шаг: 3 часа
+ - пространственное разрешение: 9 км
 
-- период: 2020 год
-- временной шаг: 3 часа
-- пространственное разрешение: 9 км
+   Моделирование выполняется по месяцам с изменением: start_date, end_date в конфигурациях WPS/WRF.
 
-Моделирование выполняется по месяцам с изменением: start_date, end_date в конфигурациях WPS/WRF.
 8. Обработка и ML-пайплайн:
-
-- синхронизация ERA5 и WRF
-- формирование признаков
-- выбор 25 контрольных точек
-- разведочный анализ данных
-- обучение моделей Random Forest (RF), XGBoost (XGB), ConvLSTM
+ - синхронизация ERA5 и WRF
+ - формирование признаков
+ - выбор 25 контрольных точек
+ - разведочный анализ данных
+ - обучение моделей Random Forest (RF), XGBoost (XGB), ConvLSTM
 9. Обучение и оценка моделей. Скрипты:
+ - models/ConvLSTM/train.py
+ - models/tree_models/train.py
 
-- models/ConvLSTM/train.py
-- models/tree_models/train.py
-
-Метрики: RMSE, MAE, Bias, Pearson correlation (r).
+   Метрики: RMSE, MAE, Bias, Pearson correlation (r).
 10. Результирующие метрики оценки, графики обучения и результатов коррекции хранятся в reports/models/.  
