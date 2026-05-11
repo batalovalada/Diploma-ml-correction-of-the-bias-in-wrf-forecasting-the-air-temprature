@@ -10,7 +10,7 @@ from visualization.save_plots import *
 #================== paths ===============================
 path_processed = '../../data/ConvLSTM/month/base/processed/'
 path_norm = '../../data/ConvLSTM/month/base/norm_params/'
-path_results = '../../reports/models/ConvLSTM/month/base/'
+path_results = '../../reports/models/ConvLSTM/base/latlon/'
 
 # ============= parameters =============================
 device = torch.device('cpu')
@@ -37,6 +37,9 @@ def tensor_data(X, y, mask):
 def masked_mse(pred, target, mask):
     return torch.mean((pred[mask] - target[mask])**2)
 
+def masked_rmse(pred, target, mask):
+    return torch.sqrt(masked_mse(pred, target, mask))
+
 def build_model(params):
     return ConvLSTM(hidden_dim=params['hidden_dim']).to(device)
 
@@ -48,12 +51,13 @@ def train_model(model, params, Train_Dataset, Val_Dataset):
 
     # =================== Training ==============================
     best_state = copy.deepcopy(model.state_dict())
-    best_val = float('inf')
+    best_val_rmse = float('inf')
     counter = 0
     patience = 5
 
     train_losses = []
     val_losses = []
+    val_rmses = []
 
     for epoch in range(EPOCHS):
         model.train()
@@ -77,6 +81,7 @@ def train_model(model, params, Train_Dataset, Val_Dataset):
         # Validation
         model.eval()
         val_loss = 0
+        val_rmse = 0
 
         with torch.no_grad():
             for X_batch, y_batch, mask_batch in Val_Loader:
@@ -84,15 +89,21 @@ def train_model(model, params, Train_Dataset, Val_Dataset):
                 y_batch = y_batch.to(device)
                 mask_batch = mask_batch.to(device)
                 pred = model(X_batch)
+                # loss function mse
                 loss = masked_mse(pred, y_batch, mask_batch)
+                # opt hyperparams by optuna with rmse
+                rmse = masked_rmse(pred, y_batch, mask_batch)
                 val_loss += loss.item()
+                val_rmse += rmse.item()
 
         val_loss /= len(Val_Loader)
+        val_rmse /= len(Val_Loader)
         val_losses.append(val_loss)
+        val_rmses.append(val_rmse)
 
         # early stopping
-        if val_loss < best_val:
-            best_val = val_loss
+        if val_rmse < best_val_rmse:
+            best_val_rmse = val_rmse
             counter = 0
             best_state = copy.deepcopy(model.state_dict())
         else:
@@ -103,20 +114,20 @@ def train_model(model, params, Train_Dataset, Val_Dataset):
             break
 
     model.load_state_dict(best_state)
-    return train_losses, val_losses
+    return train_losses, val_losses, val_rmses
 
 
 # optuna function ====================================
 def objective(trial):
     params={
-        'batch': trial.suggest_categorical('batch', [24]),
+        'batch': trial.suggest_categorical('batch', [8, 16, 24]),
         'lr': trial.suggest_float('lr', 1e-5, 3e-3, log=True),
         'hidden_dim': trial.suggest_categorical('hidden_dim', [64]),
     }
     model = build_model(params)
-    _, val_losses = train_model(model, params, Train_Dataset, Val_Dataset)
-    val_loss = min(val_losses)
-    return val_loss
+    _, _, val_rmses = train_model(model, params, Train_Dataset, Val_Dataset)
+    val_rmse = min(val_rmses)
+    return val_rmse
 
 #================= load data =======================
 X_train, y_train, mask_train = load_npz(path_processed + 'train.npz')
@@ -146,7 +157,7 @@ print("Best value:", study.best_value)
 
 # ===================== training ConvLSTM model ======================
 best_model = build_model(best_params)
-train_losses, val_losses = train_model(best_model, best_params, Train_Dataset, Val_Dataset)
+train_losses, val_losses, _ = train_model(best_model, best_params, Train_Dataset, Val_Dataset)
 
 # ===================== Test =======================
 Test_Loader = DataLoader(Test_Dataset, batch_size=best_params['batch'], shuffle=False)

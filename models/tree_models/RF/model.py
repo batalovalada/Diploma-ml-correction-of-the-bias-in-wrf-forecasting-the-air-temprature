@@ -13,6 +13,7 @@ def return_params(trial):
 def build_model(params):
     return RandomForestRegressor(
         **params,
+        criterion='squared_error',
         n_jobs=N_JOBS,
         random_state=RANDOM_STATE
     )
