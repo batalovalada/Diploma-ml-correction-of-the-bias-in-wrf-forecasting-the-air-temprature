@@ -1,7 +1,142 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 
 from config.data.features_config import features
+
+# ======== eda plots =======================================
+def save_corr_matrix_plot(corr, path_dir):
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(corr, annot=True, cmap='coolwarm', fmt='.2f')
+    plt.title('Корреляционная матрица (train)')
+    plt.savefig(path_dir + 'corr_matrix.png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+def save_features_hist(df,  path_dir):
+    df[features].hist(bins=20, figsize=(15, 10))
+    plt.suptitle('Распределение признаков (train)')
+    plt.savefig(path_dir+ 'features_hist.png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+def save_spatial_mean_t2m_map(df_wrf, df_era5, path_dir, vmin = 250, vmax=280):
+    T2_wrf_mean = df_wrf.groupby(['south_north', 'west_east'])['T2'].mean().unstack()
+    T2_era5_mean = df_era5.groupby(['south_north', 'west_east'])['t2m'].mean().unstack()
+    fig, axes = plt.subplots(1, 2, figsize=(16, 6), constrained_layout=True)
+
+    im0 = axes[0].imshow(T2_wrf_mean.values, cmap='coolwarm', vmin=vmin, vmax=vmax)
+    axes[0].set_title("WRF mean temperature")
+    axes[0].set_xlabel("Longitude index")
+    axes[0].set_ylabel("Latitude index")
+
+    im1 = axes[1].imshow(T2_era5_mean.values, cmap='coolwarm', vmin=vmin, vmax=vmax)
+    axes[1].set_title("ERA5 mean temperature")
+    axes[1].set_xlabel("Longitude index")
+    axes[1].set_ylabel("Latitude index")
+
+    fig.colorbar(im0, ax=axes, label='Temperature (K)', fraction=0.046, pad=0.04)
+    plt.savefig(path_dir + "mean_temperature_map.png")
+    plt.close()
+
+def save_seasonal_spatial_mean_t2m_map(df_wrf, df_era5, path_dir):
+    seasons = ["Winter", "Spring", "Summer", "Autumn"]
+    fig, axes = plt.subplots(4, 2, figsize=(14, 20), constrained_layout=True)
+
+    for i, season in enumerate(seasons):
+        # WRF
+        wrf_season = df_wrf[df_wrf["season"] == season]
+        T2_wrf_mean = wrf_season.groupby(["south_north", "west_east"])["T2"].mean().unstack()
+
+        im0 = axes[i, 0].imshow(T2_wrf_mean.values, cmap="coolwarm", vmin=250, vmax=300)
+
+        axes[i, 0].set_title(f"WRF mean temperature ({season})")
+        axes[i, 0].set_xlabel("Longitude index")
+        axes[i, 0].set_ylabel("Latitude index")
+
+        # ERA5
+        era5_season = df_era5[df_era5["season"] == season]
+        T2_era5_mean = era5_season.groupby(["south_north", "west_east"])["t2m"].mean().unstack()
+
+        im1 = axes[i, 1].imshow(T2_era5_mean.values, cmap="coolwarm", vmin=250, vmax=300)
+
+        axes[i, 1].set_title(f"ERA5 mean temperature ({season})")
+        axes[i, 1].set_xlabel("Longitude index")
+        axes[i, 1].set_ylabel("Latitude index")
+
+        fig.colorbar(im0, ax=axes[i], label="Temperature (K)", fraction=0.02, pad=0.02)
+
+    plt.savefig(path_dir + "seasonal_mean_temperature_map.png")
+    plt.close()
+
+def save_temporal_t2m_dynamics(df_wrf, df_era5, path_dir):
+    T2_wrf_time = df_wrf.groupby('time')['T2'].mean()
+    T2_era5_time = df_era5.groupby('time')['t2m'].mean()
+
+    plt.figure(figsize=(25, 5))
+
+    plt.plot(T2_wrf_time.index, T2_wrf_time.values, label='WRF')
+    plt.plot(T2_era5_time.index, T2_era5_time.values, label='ERA5')
+
+    plt.xlabel("Time step")
+    plt.ylabel("Temperature (K)")
+    plt.title("Mean temperature temporal evolution")
+
+    plt.legend()
+    plt.grid()
+
+    plt.tight_layout()
+    plt.savefig(path_dir+ "temperature_timeseries.png")
+    plt.close()
+
+def save_spatial_std_map(df_wrf, df_era5, path_dir, vmin_std = 0, vmax_std = 8):
+    T2_wrf_std = df_wrf.groupby(['south_north', 'west_east'])['T2'].std().unstack()
+    T2_era5_std = df_era5.groupby(['south_north', 'west_east'])['t2m'].std().unstack()
+
+    fig, axes = plt.subplots(1, 2, figsize=(16, 6), constrained_layout=True)
+
+    im0 = axes[0].imshow(T2_wrf_std.values, cmap='viridis', vmin=vmin_std, vmax=vmax_std)
+    axes[0].set_title("WRF temperature variability (std)")
+    axes[0].set_xlabel("Longitude index")
+    axes[0].set_ylabel("Latitude index")
+
+    im1 = axes[1].imshow(T2_era5_std.values, cmap='viridis', vmin=vmin_std, vmax=vmax_std)
+    axes[1].set_title("ERA5 temperature variability (std)")
+    axes[1].set_xlabel("Longitude index")
+    axes[1].set_ylabel("Latitude index")
+
+    fig.colorbar(im0, ax=axes, label='Std temperature', fraction=0.046, pad=0.04)
+    plt.savefig(path_dir + "temperature_std_map.png")
+    plt.close()
+
+
+def save_seasonal_spatial_std_map(df_wrf, df_era5, path_dir,  vmin_std = 0, vmax_std = 11):
+    seasons = ["Winter", "Spring", "Summer", "Autumn"]
+    fig, axes = plt.subplots(4, 2, figsize=(14, 20), constrained_layout=True)
+
+    for i, season in enumerate(seasons):
+        # WRF
+        wrf_season = df_wrf[df_wrf["season"] == season]
+        T2_wrf_std = wrf_season.groupby(["south_north", "west_east"])["T2"].std().unstack()
+
+        im0 = axes[i, 0].imshow(T2_wrf_std.values, cmap="viridis", vmin=vmin_std, vmax=vmax_std)
+
+        axes[i, 0].set_title(f"WRF temperature std ({season})")
+        axes[i, 0].set_xlabel("Longitude index")
+        axes[i, 0].set_ylabel("Latitude index")
+
+        # ERA5
+        era5_season = df_era5[df_era5["season"] == season]
+        T2_era5_std = era5_season.groupby(["south_north", "west_east"])["t2m"].std().unstack()
+
+        im1 = axes[i, 1].imshow(T2_era5_std.values, cmap="viridis", vmin=vmin_std, vmax=vmax_std)
+
+        axes[i, 1].set_title(f"ERA5 temperature std ({season})")
+        axes[i, 1].set_xlabel("Longitude index")
+        axes[i, 1].set_ylabel("Latitude index")
+
+        fig.colorbar(im0, ax=axes[i], label="Temperature std (K)", fraction=0.02, pad=0.02)
+
+    plt.savefig(path_dir + "seasonal_temperature_std_map.png")
+    plt.close()
 
 # ========= common plots ====================================
 # scatter plot
