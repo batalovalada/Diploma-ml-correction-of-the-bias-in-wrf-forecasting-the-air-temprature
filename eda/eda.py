@@ -9,8 +9,8 @@ wrf_path = '../data/WRF_output/year/wrfout_d01_2020-01-01_00:00:00'
 reports_path = '../reports/eda/year/'
 eda_report = 'data_info.txt'
 wrf_raw_path = '../data/preprocessed/year/full/df_full_wrf.parquet'
-wrf_nodes_path = '../data/preprocessed/year/selected/df_selected_eda.parquet'
-era5_path = '../data/preprocessed/year/selected/df_selected_era5.parquet'
+wrf_nodes_path = '../data/preprocessed/year/selected/df_selected_wrf_eda.parquet'
+era5_path = '../data/preprocessed/year/selected/df_selected_era5_eda.parquet'
 
 # ========= functions ===============
 def get_season(month):

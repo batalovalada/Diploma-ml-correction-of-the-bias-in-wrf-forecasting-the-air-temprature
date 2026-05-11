@@ -237,7 +237,7 @@ def save_corrected_map(T2_wrf, T2_era5, T2_corrected, path_dir, model_name):
 
 # ===================== ML and XGBoost plots ==============================
 # feature importance plot
-def save_feature_importance_plot(model, lags, path_dir, model_name):
+def save_feature_importance_plot(model, optional_features, lags, path_dir, model_name):
     importances = model.feature_importances_
     feature_names_expanded = []
 
@@ -245,7 +245,7 @@ def save_feature_importance_plot(model, lags, path_dir, model_name):
         for f in features:
             feature_names_expanded.append(f"{f}_lag{lag + 1}")
 
-    feature_names_expanded += ["lat", "lon"] #if there are lat lon features
+    feature_names_expanded += optional_features #if there are coords or time features
 
     plt.figure(figsize=(12, 10))
     plt.barh(feature_names_expanded, importances)

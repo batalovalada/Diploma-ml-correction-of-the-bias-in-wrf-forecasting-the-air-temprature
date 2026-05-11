@@ -3,23 +3,45 @@ import optuna
 from sklearn.metrics import mean_squared_error
 
 from config.hyperparameters.tree_models import lags, H, W
-from config.data.split_month_config import *
+from config.data.features_config import spatial_features, time_features
 from metrics_utils.metrics import *
 from visualization.save_plots import *
 
-# depend on model: XGB, RF
+# depend on model: XGB, RF !!!!!!!!!!!
+# XGBoost month
 from XGB.model import return_params, build_model, train_model, save_best_params
-#from RF.model import return_params, build_model, train_model, save_best_params
-
-# ============ paths =============
+from config.data.split_month_config import *
+name_model = 'XGBoost'
+# base
+# path_processed = '../../data/tree_models/month/base/processed/'
+# path_params = '../../data/tree_models/month/base/params/'
+# path_results = '../../reports/models/XGB/month/base/'
+# optional_features = []
+# # latlon
 path_processed = '../../data/tree_models/month/latlon/processed/'
 path_params = '../../data/tree_models/month/latlon/params/'
-
-# depend on model: XGB, RF
 path_results = '../../reports/models/XGB/month/latlon/'
-#path_results = '../../reports/models/RF/month/latlon/'
-name_model = 'XGBoost'
-#name_model = 'RF'
+optional_features = spatial_features
+
+
+
+
+
+# Random Forest month
+# from RF.model import return_params, build_model, train_model, save_best_params
+# from config.data.split_month_config import *
+# name_model = 'RF'
+# # # base
+# path_processed = '../../data/tree_models/month/base/processed/'
+# path_params = '../../data/tree_models/month/base/params/'
+# path_results = '../../reports/models/RF/month/base/'
+# optional_features = []
+# # latlon
+# path_processed = '../../data/tree_models/month/latlon/processed/'
+# path_params = '../../data/tree_models/month/latlon/params/'
+# path_results = '../../reports/models/RF/month/latlon/'
+# optional_features = spatial_features
+
 
 # ======== function ==============
 def load_npz(path):
@@ -83,7 +105,7 @@ T2_corrected = T2_wrf_test + test_pred_restored
 define_and_save_metrics(test_pred_restored, y_test_restored, mask_test_reshaped, T2_wrf_test, T2_corrected, T2_era5_test, path_results)
 
 # vizualization ========================================
-save_feature_importance_plot(best_model, lags, path_results, name_model)
+save_feature_importance_plot(best_model, optional_features, lags, path_results, name_model)
 save_radial_distribution_plot(test_pred_restored,y_test_restored, mask_test_reshaped, path_results, name_model)
 save_scatter_plot(test_pred_restored, y_test_restored, mask_test_reshaped, path_results, name_model)
 save_rmse_map(test_pred_restored, y_test_restored, mask_test_reshaped, path_results, name_model)

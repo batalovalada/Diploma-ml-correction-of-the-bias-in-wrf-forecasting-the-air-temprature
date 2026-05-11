@@ -1,13 +1,51 @@
 import xarray as xr
 import numpy as np
 
-from config.data.split_year_config import *
+from config.data.features_config import features, spatial_features, time_features
 
-# ========================================= paths ========================
+# month base
+# from config.data.split_month_config import *
+# path_selected = '../../data/preprocessed/month/selected/'
+# path_t2m = '../../data/preprocessed/month/t2m/'
+# path_norm = '../../data/ConvLSTM/month/base/norm_params/'
+# path_processed = '../../data/ConvLSTM/month/base/processed/'
+
+# # month latlon
+# from config.data.split_month_config import *
+# path_selected = '../../data/preprocessed/month/selected/'
+# path_t2m = '../../data/preprocessed/month/t2m/'
+# path_norm = '../../data/ConvLSTM/month/latlon/norm_params/'
+# path_processed = '../../data/ConvLSTM/month/latlon/processed/'
+#
+# # year base
+# from config.data.split_year_config import *
+# path_selected = '../../data/preprocessed/year/selected/'
+# path_t2m = '../../data/preprocessed/year/t2m/'
+# path_norm = '../../data/ConvLSTM/year/base/norm_params/'
+# path_processed = '../../data/ConvLSTM/year/base/processed/'
+
+# # year latlon
+# from config.data.split_year_config import *
+# path_selected = '../../data/preprocessed/year/selected/'
+# path_t2m = '../../data/preprocessed/year/t2m/'
+# path_norm = '../../data/ConvLSTM/year/latlon/norm_params/'
+# path_processed = '../../data/ConvLSTM/year/latlon/processed/'
+#
+# # year date
+# from config.data.split_year_config import *
+# path_selected = '../../data/preprocessed/year/selected/'
+# path_t2m = '../../data/preprocessed/year/t2m/'
+# path_norm = '../../data/ConvLSTM/year/date/norm_params/'
+# path_processed = '../../data/ConvLSTM/year/date/processed/'
+#
+#
+# # year date latlon
+from config.data.split_year_config import *
 path_selected = '../../data/preprocessed/year/selected/'
 path_t2m = '../../data/preprocessed/year/t2m/'
-path_norm = '../../data/ConvLSTM/year/base/norm_params/'
-path_processed = '../../data/ConvLSTM/year/base/processed/'
+path_norm = '../../data/ConvLSTM/year/date_latlon/norm_params/'
+path_processed = '../../data/ConvLSTM/year/date_latlon/processed/'
+
 
 # ======= parameters ================================================
 lookback = 4
@@ -57,9 +95,14 @@ ds_era5 = xr.open_dataset(path_selected+'ds_selected_era5.nc')
 t2_wrf_ds = xr.open_dataset(path_t2m+'t2_wrf_test.nc')
 t2_era5_ds = xr.open_dataset(path_t2m+'t2_era5_test.nc')
 
-ds_wrf = ds_wrf.drop_vars(['XLAT', 'XLONG'])  # model uses nodes numbers
-# ds_wrf['lat'] = ds_wrf.XLAT
-# ds_wrf['lon'] = ds_wrf.XLONG
+# to choose, what dataset do you need:
+# base
+# ds_wrf = ds_wrf.drop_vars(spatial_features+time_features)
+# latlon
+# ds_wrf = ds_wrf.drop_vars(time_features)
+# # date
+# ds_wrf = ds_wrf.drop_vars(spatial_features)
+# date latlon - nothing
 
 # creating X, y with train, val, test ======================================
 X_ds = ds_wrf
@@ -74,7 +117,6 @@ X_test, y_test, y_mask_test = split_data(X_ds, y_ds, y_mask, test_start, test_en
 
 # T2 wrf, era5 to ndarray for check model result ============================
 offset = lookback + horizon - 1
-t2_wrf_ds = t2_wrf_ds.drop_vars(['XLAT', 'XLONG'])
 t2_wrf= t2_wrf_ds.isel(time=slice(offset, None))['T2'].values
 t2_era5 = t2_era5_ds.isel(time=slice(offset, None))['t2m'].values
 
@@ -83,13 +125,25 @@ X_train = X_train.to_array().transpose("time","variable","south_north","west_eas
 X_val = X_val.to_array().transpose("time","variable","south_north","west_east")
 X_test = X_test.to_array().transpose("time","variable","south_north","west_east")
 
-X_mean = X_train.mean(dim=['time', 'south_north', 'west_east'])
-X_std = X_train.std(dim=['time', 'south_north', 'west_east'])
+X_mean = X_train.sel(variable=features).mean(dim=['time', 'south_north', 'west_east'])
+X_std = X_train.sel(variable=features).std(dim=['time', 'south_north', 'west_east'])
 
 y_mean = y_train.mean()
 y_std = y_train.std()
 
-X_train, X_val, X_test = normalize_split_data(X_train, X_val, X_test, X_mean, X_std)
+X_train.loc[dict(variable=features)] = normalize(X_train.sel(variable=features), X_mean, X_std)
+X_val.loc[dict(variable=features)] = normalize(X_val.sel(variable=features), X_mean, X_std)
+X_test.loc[dict(variable=features)] = normalize(X_test.sel(variable=features), X_mean, X_std)
+
+# normalized separated spatial features
+X_spatial_mean = X_train.sel(variable=spatial_features).mean(dim=['time', 'south_north', 'west_east'])
+X_spatial_std = X_train.sel(variable=spatial_features).std(dim=['time', 'south_north', 'west_east'])
+
+X_train.loc[dict(variable=spatial_features)] = normalize(X_train.sel(variable=spatial_features), X_spatial_mean, X_spatial_std)
+X_val.loc[dict(variable=spatial_features)] = normalize(X_val.sel(variable=spatial_features), X_spatial_mean, X_spatial_std)
+X_test.loc[dict(variable=spatial_features)] = normalize(X_test.sel(variable=spatial_features), X_spatial_mean, X_spatial_std)
+
+# target normalized
 y_train, y_val, y_test = normalize_split_data(y_train, y_val, y_test, y_mean, y_std)
 
 # ================================= create sequences  =================================

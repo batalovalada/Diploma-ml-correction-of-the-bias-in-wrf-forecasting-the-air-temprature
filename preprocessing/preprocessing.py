@@ -3,14 +3,23 @@ import numpy as np
 import glob
 
 from config.data.features_config import features
-from config.data.split_year_config import *
 
 # ========= paths =======================
-path_full = '../data/preprocessed/year/full/'
-path_selected = '../data/preprocessed/year/selected/'
-path_t2m = '../data/preprocessed/year/t2m/'
-path_wrf = sorted(glob.glob("../data/WRF_output/year/wrfout_d01_*"))
-paths_surface = sorted(glob.glob('../data/ERA5/year/surface/ERA5_surface_*.grib'))
+# year !!!!!
+# from config.data.split_year_config import *
+# path_full = '../data/preprocessed/year/full/'
+# path_selected = '../data/preprocessed/year/selected/'
+# path_t2m = '../data/preprocessed/year/t2m/'
+# path_wrf = sorted(glob.glob("../data/WRF_output/year/wrfout_d01_*"))
+# paths_surface = sorted(glob.glob('../data/ERA5/year/surface/ERA5_surface_*.grib'))
+
+# month !!!!!!
+from config.data.split_month_config import *
+path_full = '../data/preprocessed/month/full/'
+path_selected = '../data/preprocessed/month/selected/'
+path_t2m = '../data/preprocessed/month/t2m/'
+path_wrf = sorted(glob.glob("../data/WRF_output/month/wrfout_d01_*"))
+paths_surface = sorted(glob.glob('../data/ERA5/month/surface/ERA5_surface_*.grib'))
 
 # create dataset from .grib files function
 def create_dataset_era5(paths, filter_arg):
@@ -42,7 +51,6 @@ ds_wrf = ds_wrf[features]
 df_wrf = ds_wrf.to_dataframe()
 # save primary df[features] -------------------------------------
 df_wrf.to_parquet(path_full + 'df_full_wrf.parquet', index=True) # -> eda.py
-ds_wrf.to_netcdf(path_full + "ds_full_wrf.nc")
 
 # ========== select nodes sn x we, time intersect ==============================
 ds_wrf = ds_wrf.isel(south_north=sn, west_east=we)
@@ -62,7 +70,7 @@ lons = ds_wrf.XLONG.isel(time=0).reset_coords(drop=True)
 
 ds_era5 = ds_era5.sel(time=common_time).interp(latitude=lats, longitude=lons)
 
-# to save selected data in DataFrame
+# to save selected data in DataFrame -> eda.py
 df_wrf = ds_wrf.to_dataframe().reset_index()
 df_era5 = ds_era5.to_dataframe().reset_index()
 
@@ -70,15 +78,31 @@ df_era5 = ds_era5.to_dataframe().reset_index()
 df_eda = df_wrf.copy()
 df_eda['node_id'] = df_eda['south_north'].astype(str) + '-' + df_eda['west_east'].astype(str)
 
-# select data to check metrics (test, val) =================================================================
+# select data to check metrics (test) =================================================================
 t2_era5_test = ds_era5['t2m'].sel(time=slice(test_start, test_end))
 t2_wrf_test = ds_wrf['T2'].sel(time=slice(test_start, test_end))
 
+# add features lat, lon, information about hour and day of year
+lats = ds_wrf.XLAT.isel(time=0)
+lons = ds_wrf.XLONG.isel(time=0)
+ds_wrf['lat'] = lats.broadcast_like(ds_wrf['T2'])
+ds_wrf['lon'] = lons.broadcast_like(ds_wrf['T2'])
+ds_wrf = ds_wrf.drop_vars(['XLAT', 'XLONG'])
+
+time = ds_wrf['time']
+
+ds_wrf["hour_sin"] = np.sin(2 * np.pi * time.dt.hour / 24).broadcast_like(ds_wrf['T2'])
+ds_wrf["hour_cos"] = np.cos(2 * np.pi * time.dt.hour / 24).broadcast_like(ds_wrf['T2'])
+
+ds_wrf["day_sin"] = np.sin(2 * np.pi * time.dt.dayofyear / 365).broadcast_like(ds_wrf['T2'])
+ds_wrf["day_cos"] = np.cos(2 * np.pi * time.dt.dayofyear / 365).broadcast_like(ds_wrf['T2'])
+
+t2_wrf_test  = t2_wrf_test.drop_vars(['XLAT', 'XLONG'])
+
 # save clean df, ds in selected nodes and intersected time -------------------------------------
-df_eda.to_parquet(path_selected + 'df_selected_eda.parquet', index=False) # -> eda.py
-df_wrf.to_parquet(path_selected + 'df_selected_wrf.parquet', index=False) # -> model preprocess
+df_eda.to_parquet(path_selected + 'df_selected_wrf_eda.parquet', index=False) # -> eda.py
+df_era5.to_parquet(path_selected + 'df_selected_era5_eda.parquet', index=False) # -> eda.py
 ds_wrf.to_netcdf(path_selected + "ds_selected_wrf.nc") # -> model preprocess
-df_era5.to_parquet(path_selected + 'df_selected_era5.parquet', index=False) # -> model preprocess, eda.py
 ds_era5.to_netcdf(path_selected + 'ds_selected_era5.nc') # -> model preprocess
 
 # save t2 era5 and t2 wrf ----------------------------------------------------------------------

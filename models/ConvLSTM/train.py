@@ -7,10 +7,15 @@ from config.hyperparameters.convlstm import EPOCHS
 from metrics_utils.metrics import *
 from visualization.save_plots import *
 
-#================== paths ===============================
-path_processed = '../../data/ConvLSTM/month/base/processed/'
-path_norm = '../../data/ConvLSTM/month/base/norm_params/'
-path_results = '../../reports/models/ConvLSTM/base/latlon/'
+# month base
+# path_processed = '../../data/ConvLSTM/month/base/processed/'
+# path_norm = '../../data/ConvLSTM/month/base/norm_params/'
+# path_results = '../../reports/models/ConvLSTM/month/base/'
+
+# month latlon
+path_processed = '../../data/ConvLSTM/month/latlon/processed/'
+path_norm = '../../data/ConvLSTM/month/latlon/norm_params/'
+path_results = '../../reports/models/ConvLSTM/month/latlon/'
 
 # ============= parameters =============================
 device = torch.device('cpu')

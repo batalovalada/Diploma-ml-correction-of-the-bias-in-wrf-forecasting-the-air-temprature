@@ -1,16 +1,58 @@
 import numpy as np
 import xarray as xr
 
-from config.data.split_year_config import *
 from config.data.features_config import features
-from config.hyperparameters.tree_models import lags
+from config.hyperparameters.tree_models import lags, H, W
 
 # ============= paths =======================
+# month base !!!!
+# from config.data.split_month_config import *
+# path_selected = '../../data/preprocessed/month/selected/'
+# path_t2m = '../../data/preprocessed/month/t2m/'
+# path_processed = '../../data/tree_models/month/base/processed/'
+# path_params = '../../data/tree_models/month/base/params/'
+# path_min_time = '../../data/ConvLSTM/month/base/processed/'
+
+# # month latlon !!!
+# from config.data.split_month_config import *
+# path_selected = '../../data/preprocessed/month/selected/'
+# path_t2m = '../../data/preprocessed/month/t2m/'
+# path_processed = '../../data/tree_models/month/latlon/processed/'
+# path_params = '../../data/tree_models/month/latlon/params/'
+# path_min_time = '../../data/ConvLSTM/month/base/processed/'
+#
+# # year base !!!
+# from config.data.split_year_config import *
+# path_selected = '../../data/preprocessed/year/selected/'
+# path_t2m = '../../data/preprocessed/year/t2m/'
+# path_processed = '../../data/tree_models/year/base/processed/'
+# path_params = '../../data/tree_models/year/base/params/'
+# path_min_time = '../../data/ConvLSTM/year/base/processed/'
+#
+# # year latlon !!!
+# from config.data.split_year_config import *
+# path_selected = '../../data/preprocessed/year/selected/'
+# path_t2m = '../../data/preprocessed/year/t2m/'
+# path_processed = '../../data/tree_models/year/latlon/processed/'
+# path_params = '../../data/tree_models/year/latlon/params/'
+# path_min_time = '../../data/ConvLSTM/year/base/processed/'
+# #
+# # year date !!!
+# from config.data.split_year_config import *
+# path_selected = '../../data/preprocessed/year/selected/'
+# path_t2m = '../../data/preprocessed/year/t2m/'
+# path_processed = '../../data/tree_models/year/date/processed/'
+# path_params = '../../data/tree_models/year/date/params/'
+# path_min_time = '../../data/ConvLSTM/year/base/processed/'
+
+# year latlon and date !!!
+from config.data.split_year_config import *
 path_selected = '../../data/preprocessed/year/selected/'
 path_t2m = '../../data/preprocessed/year/t2m/'
-path_processed = '../../data/tree_models/year/base/processed/'
-path_params = '../../data/tree_models/year/base/params/'
+path_processed = '../../data/tree_models/year/date_latlon/processed/'
+path_params = '../../data/tree_models/year/date_latlon/params/'
 path_min_time = '../../data/ConvLSTM/year/base/processed/'
+
 
 #===========functions =========================
 def split_by_mask(X, y, mask, time_lagged):
@@ -28,6 +70,19 @@ def add_coords(X, lat_flatten, lon_flatten, time):
     lon_tiled = np.tile(lon_flatten, time)
 
     return np.concatenate([X, lat_tiled[:, None], lon_tiled[:, None]], axis=1)
+
+def add_time_features(X, hour_sin, hour_cos, day_sin, day_cos):
+    hour_sin_flat = hour_sin.reshape(-1, 1)
+    hour_cos_flat = hour_cos.reshape(-1, 1)
+    day_sin_flat = day_sin.reshape(-1, 1)
+    day_cos_flat = day_cos.reshape(-1, 1)
+    return np.concatenate([
+        X,
+        hour_sin_flat,
+        hour_cos_flat,
+        day_sin_flat,
+        day_cos_flat,
+    ], axis=1)
 
 def apply_nan_mask(X, y):
     mask = ~np.isnan(y)
@@ -81,17 +136,40 @@ X_train, y_train, T_train, H, W = flatten_data(X_train, y_train)
 X_val, y_val, T_val, _, _ = flatten_data(X_val, y_val)
 X_test, y_test, T_test, _, _ = flatten_data(X_test, y_test)
 
-# ================ add lat, lon as a features =======
-# select nodes coordinates
-# lats = ds_wrf.XLAT.isel(time=0).values # shape = (H, W)
-# lons = ds_wrf.XLONG.isel(time=0).values
-#
-# lat_flatten = lats.flatten() # shape = (H*W, )
-# lon_flatten = lons.flatten()
-#
-# X_train = add_coords(X_train, lat_flatten, lon_flatten, T_train)
-# X_val = add_coords(X_val, lat_flatten, lon_flatten, T_val)
-# X_test = add_coords(X_test, lat_flatten, lon_flatten, T_test)
+# ========= add extra features ================
+# add coordinates features
+lats = ds_wrf.lat.isel(time=0).values # shape = (H, W)
+lons = ds_wrf.lon.isel(time=0).values
+
+lat_flatten = lats.flatten() # shape = (H*W, )
+lon_flatten = lons.flatten()
+
+X_train = add_coords(X_train, lat_flatten, lon_flatten, T_train)
+X_val = add_coords(X_val, lat_flatten, lon_flatten, T_val)
+X_test = add_coords(X_test, lat_flatten, lon_flatten, T_test)
+
+# add time and day features
+hour_sin_train = ds_wrf.hour_sin.sel(time=time_rf_train).values
+hour_cos_train = ds_wrf.hour_cos.sel(time=time_rf_train).values
+
+hour_sin_val = ds_wrf.hour_sin.sel(time=time_rf_val).values
+hour_cos_val = ds_wrf.hour_cos.sel(time=time_rf_val).values
+
+hour_sin_test = ds_wrf.hour_sin.sel(time=time_rf_test).values
+hour_cos_test = ds_wrf.hour_cos.sel(time=time_rf_test).values
+
+day_sin_train = ds_wrf.day_sin.sel(time=time_rf_train).values
+day_cos_train = ds_wrf.day_cos.sel(time=time_rf_train).values
+
+day_sin_val = ds_wrf.day_sin.sel(time=time_rf_val).values
+day_cos_val = ds_wrf.day_cos.sel(time=time_rf_val).values
+
+day_sin_test = ds_wrf.day_sin.sel(time=time_rf_test).values
+day_cos_test = ds_wrf.day_cos.sel(time=time_rf_test).values
+
+X_train = add_time_features(X_train, hour_sin_train, hour_cos_train, day_sin_train, day_cos_train)
+X_val = add_time_features(X_val, hour_sin_val, hour_cos_val, day_sin_val, day_cos_val)
+X_test = add_time_features(X_test, hour_sin_test, hour_cos_test, day_sin_test, day_cos_test)
 
 # ============ delete samples with nan values ========
 # era5 has nan values => y has too
@@ -102,7 +180,6 @@ X_test, y_test, mask_test = apply_nan_mask(X_test, y_test)
 # ========= T2 to ndarray, add mask (ERA5 has nan), select min time interval =======================
 time_common = np.intersect1d(time_lstm_test, time_rf_test)
 time_mask_ml = np.isin(time_rf_test, time_common)
-#mask_lstm = np.isin(time_lstm_test, time_common)
 
 t2_wrf_test = t2_wrf_test['T2'].values[time_mask_ml] # -> shape (time, H, W)
 t2_era5_test = t2_era5_test['t2m'].values[time_mask_ml] # -> shape (time, H, W)
@@ -110,8 +187,6 @@ t2_mask_test = ~np.isnan(t2_era5_test) # shape (time, H, W)
 
 # =========== save data ====================
 np.save(path_params+'time_lagged.npy', time_lagged.values)
-# np.save(path_params+'lat_2d.npy', lats)
-# np.save(path_params+'lon_2d.npy', lons)
 
 np.save(path_processed+'t2_wrf_test.npy', t2_wrf_test)
 np.save(path_processed+'t2_era5_test.npy', t2_era5_test)

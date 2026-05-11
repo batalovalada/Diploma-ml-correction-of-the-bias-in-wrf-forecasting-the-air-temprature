@@ -18,7 +18,7 @@ def build_model(params):
         random_state=RANDOM_STATE
     )
 
-def train_model(model, X_train, y_train):
+def train_model(model, X_train, y_train, X_val, y_val):
     model.fit(X_train, y_train)
 
 def save_best_params(params, path_dir):
