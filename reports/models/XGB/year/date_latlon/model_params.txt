@@ -1,0 +1,14 @@
+Optimized params by Optuna:
+n_estimators: 364
+max depth: 7
+learning_rate: 0.03907089279800593
+subsample: 0.9758462847959833
+colsample_bytree: 0.602481328223548
+min_child_weight: 3
+gamma: 1.239015700500012
+reg_alpha: 0.11685219770084225
+reg_lambda: 1.8496319669713057
+
+Fixed params:
+n jobs: 8
+random state: 42
