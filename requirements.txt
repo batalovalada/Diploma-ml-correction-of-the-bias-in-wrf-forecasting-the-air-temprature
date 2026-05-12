@@ -26,6 +26,8 @@ decorator==5.2.1
 distlib==0.3.6
 dulwich==0.21.3
 eccodes==2.46.0
+eccodeslib==2.46.2.19
+eckitlib==2.0.7.19
 ecmwf-datastores-client==0.5.1
 executing==2.2.1
 filelock==3.9.0
@@ -64,6 +66,7 @@ nest-asyncio==1.6.0
 netCDF4==1.7.4
 networkx==3.6.1
 numpy==2.3.5
+nvidia-nccl-cu12==2.30.4
 optuna==4.8.0
 packaging==23.0
 pandas==3.0.2

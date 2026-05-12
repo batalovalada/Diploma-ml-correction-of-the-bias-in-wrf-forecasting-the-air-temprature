@@ -1,8 +1,6 @@
 from torch.utils.data import DataLoader
 import optuna
 import copy
-import numpy as np
-import torch
 
 from model import *
 from config.hyperparameters.convlstm import EPOCHS
@@ -42,6 +40,7 @@ path_norm = '../../data/ConvLSTM/year/date_latlon/norm_params/'
 path_results = '../../reports/models/ConvLSTM/year/date_latlon/'
 
 # change in convlstm.py INPUT_DIM to 11, 13, 15, 17
+
 # ============= parameters =============================
 device = torch.device('cpu')
 
@@ -72,6 +71,7 @@ def masked_rmse(pred, target, mask):
 
 def build_model(params):
     return ConvLSTM(hidden_dim=params['hidden_dim'], dropout=params['dropout']).to(device)
+
 
 def train_model(model, params, Train_Dataset, Val_Dataset):
     Train_Loader = DataLoader(Train_Dataset, batch_size=params['batch'], shuffle=True)

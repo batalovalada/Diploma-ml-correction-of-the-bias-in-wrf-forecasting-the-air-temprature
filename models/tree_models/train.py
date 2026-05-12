@@ -1,7 +1,6 @@
 import joblib
 import optuna
 from sklearn.metrics import mean_squared_error
-import numpy as np
 
 from config.hyperparameters.tree_models import lags, H, W
 from config.data.features_config import spatial_features, time_features
@@ -39,6 +38,7 @@ from visualization.save_plots import *
 # path_params = '../../data/tree_models/month/latlon/params/'
 # path_results = '../../reports/models/RF/month/latlon/'
 # optional_features = spatial_features
+
 
 # Random Forest year
 # from RF.model import return_params, build_model, train_model, save_best_params
