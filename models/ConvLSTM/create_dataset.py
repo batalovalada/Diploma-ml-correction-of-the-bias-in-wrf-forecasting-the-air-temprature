@@ -1,7 +1,7 @@
 import xarray as xr
 import numpy as np
 
-from config.data.features_config import features, spatial_features, time_features
+from config.data.features_config import features, spatial_features, temporal_features
 
 # month base
 # from config.data.split_month_config import *
@@ -10,12 +10,12 @@ from config.data.features_config import features, spatial_features, time_feature
 # path_norm = '../../data/ConvLSTM/month/base/norm_params/'
 # path_processed = '../../data/ConvLSTM/month/base/processed/'
 
-# # month latlon
+# # month spatial
 # from config.data.split_month_config import *
 # path_selected = '../../data/preprocessed/month/selected/'
 # path_t2m = '../../data/preprocessed/month/t2m/'
-# path_norm = '../../data/ConvLSTM/month/latlon/norm_params/'
-# path_processed = '../../data/ConvLSTM/month/latlon/processed/'
+# path_norm = '../../data/ConvLSTM/month/spatial/norm_params/'
+# path_processed = '../../data/ConvLSTM/month/spatial/processed/'
 #
 # # year base
 # from config.data.split_year_config import *
@@ -24,27 +24,27 @@ from config.data.features_config import features, spatial_features, time_feature
 # path_norm = '../../data/ConvLSTM/year/base/norm_params/'
 # path_processed = '../../data/ConvLSTM/year/base/processed/'
 
-# # year latlon
+# # year spatial
 # from config.data.split_year_config import *
 # path_selected = '../../data/preprocessed/year/selected/'
 # path_t2m = '../../data/preprocessed/year/t2m/'
-# path_norm = '../../data/ConvLSTM/year/latlon/norm_params/'
-# path_processed = '../../data/ConvLSTM/year/latlon/processed/'
+# path_norm = '../../data/ConvLSTM/year/spatial/norm_params/'
+# path_processed = '../../data/ConvLSTM/year/spatial/processed/'
 #
-# # year date
+# # year temporal
 # from config.data.split_year_config import *
 # path_selected = '../../data/preprocessed/year/selected/'
 # path_t2m = '../../data/preprocessed/year/t2m/'
-# path_norm = '../../data/ConvLSTM/year/date/norm_params/'
-# path_processed = '../../data/ConvLSTM/year/date/processed/'
+# path_norm = '../../data/ConvLSTM/year/temporal/norm_params/'
+# path_processed = '../../data/ConvLSTM/year/temporal/processed/'
 #
 #
-# # year date latlon
+# # year spatiotemporal
 from config.data.split_year_config import *
 path_selected = '../../data/preprocessed/year/selected/'
 path_t2m = '../../data/preprocessed/year/t2m/'
-path_norm = '../../data/ConvLSTM/year/date_latlon/norm_params/'
-path_processed = '../../data/ConvLSTM/year/date_latlon/processed/'
+path_norm = '../../data/ConvLSTM/year/spatiotemporal/norm_params/'
+path_processed = '../../data/ConvLSTM/year/spatiotemporal/processed/'
 
 
 # ======= parameters ================================================
@@ -97,12 +97,12 @@ t2_era5_ds = xr.open_dataset(path_t2m+'t2_era5_test.nc')
 
 # to choose, what dataset do you need:
 # base
-# ds_wrf = ds_wrf.drop_vars(spatial_features+time_features)
-# latlon
-# ds_wrf = ds_wrf.drop_vars(time_features)
-# # date
+# ds_wrf = ds_wrf.drop_vars(spatial_features+temporal_features)
+# spatial
+# ds_wrf = ds_wrf.drop_vars(temporal_features)
+# # temporal
 # ds_wrf = ds_wrf.drop_vars(spatial_features)
-# date latlon - nothing
+# spatiotemporal - nothing
 
 # creating X, y with train, val, test ======================================
 X_ds = ds_wrf

@@ -70,21 +70,24 @@ project/
 ```
 
 ## Используемые технологии
-В работе используются следующие технологии и инструменты (дата обращения: 04.05.2026):
+В работе используются следующие технологии и инструменты:
 
 ### Численное моделирование атмосферы
-- WRF Preprocessing System (WPS): https://github.com/wrf-model/WPS
-- WRF Model (Weather Research and Forecasting Model, ARW core): https://github.com/wrf-model/WRF
+- WRF Preprocessing System (WPS) версии 4.6.0: https://github.com/wrf-model/WPS
+- WRF Model (Weather Research and Forecasting Model, ARW core) версии 4.7.1: https://github.com/wrf-model/WRF
 
 ### Библиотеки и системные зависимости для численного моделирования
-- HDF5 data model and library: https://github.com/HDFGroup/hdf5/archive/hdf5-1_10_5.tar.gz
-- JasPer JPEG2000 library: https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/jasper-1.900.1.tar.gz
-- libpng library: https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/libpng-1.2.50.tar.gz
-- MPICH: High-Performance Message Passing Library: https://www.mpich.org/static/downloads/4.2.2/mpich4.2.2.tar.gz
-- NetCDF-C library: https://github.com/Unidata/netcdf-c/archive/v4.7.2.tar.gz
-- NetCDF-Fortran library: https://github.com/Unidata/netcdf-fortran/archive/v4.5.2.tar.gz
+- HDF5 версии 1.10.5: https://github.com/HDFGroup/hdf5/archive/hdf5-1_10_5.tar.gz
+- JasPer версии 1.900.1: https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/jasper-1.900.1.tar.gz
+- libpng версии 1.2.50: https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/libpng-1.2.50.tar.gz
+- MPICH версии 4.2.2: https://www.mpich.org/static/downloads/4.2.2/mpich4.2.2.tar.gz
+- NetCDF-C версии 4.7.2: https://github.com/Unidata/netcdf-c/archive/v4.7.2.tar.gz
+- NetCDF-Fortran версии 4.5.2: https://github.com/Unidata/netcdf-fortran/archive/v4.5.2.tar.gz
 - Zlib compression library: https://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/zlib-1.2.11.tar.gz
-- GCC, GFortran, Make, CMake
+- GCC версии 13.3.0
+- GFortran версии 13.3.0
+- Make версии 4.3
+- CMake версии 3.28.3
 
 ### Машинное обучение
 - Random Forest
@@ -93,13 +96,14 @@ project/
 
 ### Python-библиотеки
 Основные:
-- NumPy
-- Pandas
-- Xarray
-- Scikit-learn
-- PyTorch
-- Matplotlib
-- Optuna
+- NumPy версии 2.3.5
+- Pandas версии 3.0.2
+- Xarray версии 2026.4.0
+- Scikit-learn версии 1.8.0
+- PyTorch версии 2.11.0
+- Xgboost версии 3.2.0
+- Matplotlib версии 3.10.8
+- Optuna версии 4.8.0
 
 Полный список с версиями в requirements.txt.
 
@@ -112,11 +116,11 @@ project/
 ### Область исследования
 Область исследования: Восточно-Балтийский регион (Финский залив и прилегающие территории), 
 
-ограниченный координатами 62.5°–57.5° с.ш. и 27.0°–35.0° в.д.
+ограниченный координатами 57.5°-62.5° с.ш. и 27.0°–35.0° в.д.
 
-Временой интервал: 01.01.2020 (00:00) - 31.12.2020 (21:00).
-
-Временной шаг: 3 часа.
+Репозиторий содержит два набора данных по временному интервалу:
+- Временой интервал набора "month": 01.01.2020 00:00 - 31.01.2020 18:00 UTC с шагом в 6 часов;
+- Временой интервал набора "year": 01.01.2020 00:00 - 31.12.2020 21:00 UTC с шагом в 3 часа.
 
 ### Типы данных
 - ERA5 (GRIB): pressure-levels (геопотенциал, температура, ветер, влажность), surface-levels (температура воздуха на высоте 2 м, давление, почва, ветер и др.).
@@ -126,6 +130,14 @@ project/
 - data/ERA5/ — исходные данные реанализа
 - data/WRF_output/ — результаты моделирования WRF
 - data/preprocessed/ — синхронизированные и подготовленные данные
+
+Данные "year" для обучения и тестирования моделей разделены на 4 набора:
+- "base", включающий 11 метеорологических параметров;
+- "spatial", включающий набор "base" и параметры широты (lat) и долготы (lon);
+- "temporal", включающий набор "base" и параметры, характеризующие день в году (day_sin, day_cos) и время суток (hour_sin, hour_cos);
+- "spatiotemporal",  включающий набор "base" и дополнительные параметры наборов "spatial" и "temporal".
+
+Данные "month" для обучения и тестирования моделей разделены на 2 набора: "base", "spatial".
 
 ## Схема этапов работы
 ```text
@@ -156,9 +168,9 @@ ERA5 -> WPS -> WRF -> preprocessing -> ML correction -> metrics -> visualization
    - предобработку данных: run_wps.sh -> geogrid.exe / ungrib.exe / metgrid.exe,
    - определение начальных и граничных условий: run_real.sh -> real.exe,
    - моделирование атмосферных параметров: run_wrf.sh -> wrf.exe.
-7. Ретроспективное моделирование WRF
+7. Ретроспективное моделирование WRF ("year")
    - период: 2020 год
-   - временной шаг: 3 часа
+   - временной шаг сохранения: 3 часа
    - пространственное разрешение: 9 км
 
    Моделирование выполняется по месяцам с изменением: start_date, end_date в конфигурациях WPS/WRF.

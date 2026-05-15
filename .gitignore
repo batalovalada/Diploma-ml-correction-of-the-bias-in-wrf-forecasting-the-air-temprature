@@ -11,22 +11,22 @@ data/preprocessed/year/full/ds_full_wrf.nc
 
 # too large saved RF models
 reports/models/RF/year/base/RF_model.pkl
-reports/models/RF/year/latlon/RF_model.pkl
-reports/models/RF/year/date/RF_model.pkl
-reports/models/RF/year/date_latlon/RF_model.pkl
+reports/models/RF/year/spatial/RF_model.pkl
+reports/models/RF/year/temporal/RF_model.pkl
+reports/models/RF/year/spatiotemporal/RF_model.pkl
 
 # too large saved XGB models
 reports/models/XGB/year/base/XGBoost_model.pkl
-reports/models/XGB/year/latlon/XGBoost_model.pkl
-reports/models/XGB/year/date/XGBoost_model.pkl
-reports/models/XGB/year/date_latlon/XGBoost_model.pkl
+reports/models/XGB/year/spatial/XGBoost_model.pkl
+reports/models/XGB/year/temporal/XGBoost_model.pkl
+reports/models/XGB/year/spatiotemporal/XGBoost_model.pkl
 
 
 # too large saved ConvLSTM models
 reports/models/ConvLSTM/year/base/model.pth
-reports/models/ConvLSTM/year/latlon/model.pth
-reports/models/ConvLSTM/year/date/model.pth
-reports/models/ConvLSTM/year/date_latlon/model.pth
+reports/models/ConvLSTM/year/spatial/model.pth
+reports/models/ConvLSTM/year/temporal/model.pth
+reports/models/ConvLSTM/year/spatiotemporal/model.pth
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -58,7 +58,7 @@ MANIFEST
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+#  before PyInstaller builds the exe, so as to inject temporal/other infos into it.
 *.manifest
 *.spec
 

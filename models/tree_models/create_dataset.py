@@ -2,7 +2,7 @@ import numpy as np
 import xarray as xr
 
 from config.data.features_config import features
-from config.hyperparameters.tree_models import lags, H, W
+from config.hyperparameters.tree_models import lags
 
 # ============= paths =======================
 # month base !!!!
@@ -13,12 +13,12 @@ from config.hyperparameters.tree_models import lags, H, W
 # path_params = '../../data/tree_models/month/base/params/'
 # path_min_time = '../../data/ConvLSTM/month/base/processed/'
 
-# # month latlon !!!
+# # month spatial !!!
 # from config.data.split_month_config import *
 # path_selected = '../../data/preprocessed/month/selected/'
 # path_t2m = '../../data/preprocessed/month/t2m/'
-# path_processed = '../../data/tree_models/month/latlon/processed/'
-# path_params = '../../data/tree_models/month/latlon/params/'
+# path_processed = '../../data/tree_models/month/spatial/processed/'
+# path_params = '../../data/tree_models/month/spatial/params/'
 # path_min_time = '../../data/ConvLSTM/month/base/processed/'
 #
 # # year base !!!
@@ -29,28 +29,28 @@ from config.hyperparameters.tree_models import lags, H, W
 # path_params = '../../data/tree_models/year/base/params/'
 # path_min_time = '../../data/ConvLSTM/year/base/processed/'
 #
-# # year latlon !!!
+# # year spatial !!!
 # from config.data.split_year_config import *
 # path_selected = '../../data/preprocessed/year/selected/'
 # path_t2m = '../../data/preprocessed/year/t2m/'
-# path_processed = '../../data/tree_models/year/latlon/processed/'
-# path_params = '../../data/tree_models/year/latlon/params/'
+# path_processed = '../../data/tree_models/year/spatial/processed/'
+# path_params = '../../data/tree_models/year/spatial/params/'
 # path_min_time = '../../data/ConvLSTM/year/base/processed/'
 # #
-# # year date !!!
+# # year temporal !!!
 # from config.data.split_year_config import *
 # path_selected = '../../data/preprocessed/year/selected/'
 # path_t2m = '../../data/preprocessed/year/t2m/'
-# path_processed = '../../data/tree_models/year/date/processed/'
-# path_params = '../../data/tree_models/year/date/params/'
+# path_processed = '../../data/tree_models/year/temporal/processed/'
+# path_params = '../../data/tree_models/year/temporal/params/'
 # path_min_time = '../../data/ConvLSTM/year/base/processed/'
 
-# year latlon and date !!!
+# year spatiotemporal !!!
 from config.data.split_year_config import *
 path_selected = '../../data/preprocessed/year/selected/'
 path_t2m = '../../data/preprocessed/year/t2m/'
-path_processed = '../../data/tree_models/year/date_latlon/processed/'
-path_params = '../../data/tree_models/year/date_latlon/params/'
+path_processed = '../../data/tree_models/year/spatiotemporal/processed/'
+path_params = '../../data/tree_models/year/spatiotemporal/params/'
 path_min_time = '../../data/ConvLSTM/year/base/processed/'
 
 
@@ -137,7 +137,7 @@ X_val, y_val, T_val, _, _ = flatten_data(X_val, y_val)
 X_test, y_test, T_test, _, _ = flatten_data(X_test, y_test)
 
 # ========= add extra features ================
-# add coordinates features
+# add coordinates features (spatial)
 lats = ds_wrf.lat.isel(time=0).values # shape = (H, W)
 lons = ds_wrf.lon.isel(time=0).values
 
@@ -148,7 +148,7 @@ X_train = add_coords(X_train, lat_flatten, lon_flatten, T_train)
 X_val = add_coords(X_val, lat_flatten, lon_flatten, T_val)
 X_test = add_coords(X_test, lat_flatten, lon_flatten, T_test)
 
-# add time and day features
+# add time and day features (temporal)
 hour_sin_train = ds_wrf.hour_sin.sel(time=time_rf_train).values
 hour_cos_train = ds_wrf.hour_cos.sel(time=time_rf_train).values
 

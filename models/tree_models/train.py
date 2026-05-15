@@ -3,7 +3,7 @@ import optuna
 from sklearn.metrics import mean_squared_error
 
 from config.hyperparameters.tree_models import lags, H, W
-from config.data.features_config import spatial_features, time_features
+from config.data.features_config import spatial_features, temporal_features
 from metrics_utils.metrics import *
 from visualization.save_plots import *
 
@@ -17,10 +17,10 @@ from visualization.save_plots import *
 # path_params = '../../data/tree_models/month/base/params/'
 # path_results = '../../reports/models/XGB/month/base/'
 # optional_features = []
-# # latlon
-# path_processed = '../../data/tree_models/month/latlon/processed/'
-# path_params = '../../data/tree_models/month/latlon/params/'
-# path_results = '../../reports/models/XGB/month/latlon/'
+# # spatial
+# path_processed = '../../data/tree_models/month/spatial/processed/'
+# path_params = '../../data/tree_models/month/spatial/params/'
+# path_results = '../../reports/models/XGB/month/spatial/'
 # optional_features = spatial_features
 
 
@@ -33,10 +33,10 @@ from visualization.save_plots import *
 # path_params = '../../data/tree_models/month/base/params/'
 # path_results = '../../reports/models/RF/month/base/'
 # optional_features = []
-# # latlon
-# path_processed = '../../data/tree_models/month/latlon/processed/'
-# path_params = '../../data/tree_models/month/latlon/params/'
-# path_results = '../../reports/models/RF/month/latlon/'
+# # spatial
+# path_processed = '../../data/tree_models/month/spatial/processed/'
+# path_params = '../../data/tree_models/month/spatial/params/'
+# path_results = '../../reports/models/RF/month/spatial/'
 # optional_features = spatial_features
 
 
@@ -49,21 +49,21 @@ from visualization.save_plots import *
 # path_params = '../../data/tree_models/year/base/params/'
 # path_results = '../../reports/models/RF/year/base/'
 # optional_features = []
-# latlon
-# path_processed = '../../data/tree_models/year/latlon/processed/'
-# path_params = '../../data/tree_models/year/latlon/params/'
-# path_results = '../../reports/models/RF/year/latlon/'
+# spatial
+# path_processed = '../../data/tree_models/year/spatial/processed/'
+# path_params = '../../data/tree_models/year/spatial/params/'
+# path_results = '../../reports/models/RF/year/spatial/'
 # optional_features = spatial_features
-# # date
-# path_processed = '../../data/tree_models/year/date/processed/'
-# path_params = '../../data/tree_models/year/date/params/'
-# path_results = '../../reports/models/RF/year/date/'
-# optional_features = time_features
-# # date and latlon
-# path_processed = '../../data/tree_models/year/date_latlon/processed/'
-# path_params = '../../data/tree_models/year/date_latlon/params/'
-# path_results = '../../reports/models/RF/year/date_latlon/'
-# optional_features = spatial_features+time_features
+# # temporal
+# path_processed = '../../data/tree_models/year/temporal/processed/'
+# path_params = '../../data/tree_models/year/temporal/params/'
+# path_results = '../../reports/models/RF/year/temporal/'
+# optional_features = temporal_features
+# # spatiotemporal
+# path_processed = '../../data/tree_models/year/spatiotemporal/processed/'
+# path_params = '../../data/tree_models/year/spatiotemporal/params/'
+# path_results = '../../reports/models/RF/year/spatiotemporal/'
+# optional_features = spatial_features+temporal_features
 
 
 # XGBoost year
@@ -75,21 +75,21 @@ name_model = 'XGBoost'
 # path_params = '../../data/tree_models/year/base/params/'
 # path_results = '../../reports/models/XGB/year/base/'
 # optional_features = []
-# # latlon
-# path_processed = '../../data/tree_models/year/latlon/processed/'
-# path_params = '../../data/tree_models/year/latlon/params/'
-# path_results = '../../reports/models/XGB/year/latlon/'
+# # spatial
+# path_processed = '../../data/tree_models/year/spatial/processed/'
+# path_params = '../../data/tree_models/year/spatial/params/'
+# path_results = '../../reports/models/XGB/year/spatial/'
 # optional_features = spatial_features
-# # date
-# path_processed = '../../data/tree_models/year/date/processed/'
-# path_params = '../../data/tree_models/year/date/params/'
-# path_results = '../../reports/models/XGB/year/date/'
-# optional_features = time_features
-# # date and latlon
-path_processed = '../../data/tree_models/year/date_latlon/processed/'
-path_params = '../../data/tree_models/year/date_latlon/params/'
-path_results = '../../reports/models/XGB/year/date_latlon/'
-optional_features = spatial_features+time_features
+# # temporal
+# path_processed = '../../data/tree_models/year/temporal/processed/'
+# path_params = '../../data/tree_models/year/temporal/params/'
+# path_results = '../../reports/models/XGB/year/temporal/'
+# optional_features = temporal_features
+# # spatiotemporal
+path_processed = '../../data/tree_models/year/spatiotemporal/processed/'
+path_params = '../../data/tree_models/year/spatiotemporal/params/'
+path_results = '../../reports/models/XGB/year/spatiotemporal/'
+optional_features = spatial_features+temporal_features
 
 # ======== function ==============
 def load_npz(path):

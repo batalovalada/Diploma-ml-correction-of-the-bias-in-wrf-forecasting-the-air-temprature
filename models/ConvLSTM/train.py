@@ -12,10 +12,10 @@ from visualization.save_plots import *
 # path_norm = '../../data/ConvLSTM/month/base/norm_params/'
 # path_results = '../../reports/models/ConvLSTM/month/base/'
 
-# month latlon
-# path_processed = '../../data/ConvLSTM/month/latlon/processed/'
-# path_norm = '../../data/ConvLSTM/month/latlon/norm_params/'
-# path_results = '../../reports/models/ConvLSTM/month/latlon/'
+# month spatial
+# path_processed = '../../data/ConvLSTM/month/spatial/processed/'
+# path_norm = '../../data/ConvLSTM/month/spatial/norm_params/'
+# path_results = '../../reports/models/ConvLSTM/month/spatial/'
 
 
 # year
@@ -24,20 +24,20 @@ from visualization.save_plots import *
 # path_norm = '../../data/ConvLSTM/year/base/norm_params/'
 # path_results = '../../reports/models/ConvLSTM/year/base/'
 
-# # latlon
-# path_processed = '../../data/ConvLSTM/year/latlon/processed/'
-# path_norm = '../../data/ConvLSTM/year/latlon/norm_params/'
-# path_results = '../../reports/models/ConvLSTM/year/latlon/'
+# # spatial
+# path_processed = '../../data/ConvLSTM/year/spatial/processed/'
+# path_norm = '../../data/ConvLSTM/year/spatial/norm_params/'
+# path_results = '../../reports/models/ConvLSTM/year/spatial/'
 #
-# # date
-# path_processed = '../../data/ConvLSTM/year/date/processed/'
-# path_norm = '../../data/ConvLSTM/year/date/norm_params/'
-# path_results = '../../reports/models/ConvLSTM/year/date/'
+# # temporal
+# path_processed = '../../data/ConvLSTM/year/temporal/processed/'
+# path_norm = '../../data/ConvLSTM/year/temporal/norm_params/'
+# path_results = '../../reports/models/ConvLSTM/year/temporal/'
 
-# # date and lat lon
-path_processed = '../../data/ConvLSTM/year/date_latlon/processed/'
-path_norm = '../../data/ConvLSTM/year/date_latlon/norm_params/'
-path_results = '../../reports/models/ConvLSTM/year/date_latlon/'
+# # spatiotemporal
+path_processed = '../../data/ConvLSTM/year/spatiotemporal/processed/'
+path_norm = '../../data/ConvLSTM/year/spatiotemporal/norm_params/'
+path_results = '../../reports/models/ConvLSTM/year/spatiotemporal/'
 
 # change in convlstm.py INPUT_DIM to 11, 13, 15, 17
 
